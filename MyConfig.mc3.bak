@@ -1,0 +1,7 @@
+<config configVersion="1.1" device="dsPIC33FJ256GP710A" coreVersion="5.0.1">
+   <usedClasses class="java.util.HashMap"/>
+   <usedLibraries class="java.util.ArrayList"/>
+   <tokenMap class="java.util.HashMap"/>
+   <generatedFileHashHistoryMap class="java.util.HashMap"/>
+   <mc3libFileHashHistoryMap class="java.util.HashMap"/>
+</config>

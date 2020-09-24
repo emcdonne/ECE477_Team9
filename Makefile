@@ -49,8 +49,6 @@ CP=cp
 CCADMIN=CCadmin
 RANLIB=ranlib
 
-main.o: main.cpp 
-	g++ -c main.cpp
 
 # build
 build: .build-post
