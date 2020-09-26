@@ -11,7 +11,7 @@
 
 #include "stm32f0xx.h"
 #include "stm32f0_discovery.h"
-			
+#include <SPI.h>
 
 int main(void)
 {
@@ -24,9 +24,9 @@ int main(void)
 
 	while(1)
 	{
-	    for (i=0; i< 10000000; i++);
+	    for (i=0; i< 1000000; i++);
 	    GPIOC-> ODR |= (1<<8);
-	    for (i=0; i< 10000000; i++);
+	    for (i=0; i< 1000000; i++);
 	    GPIOC-> ODR &= ~(1<<8);
 
 	}
