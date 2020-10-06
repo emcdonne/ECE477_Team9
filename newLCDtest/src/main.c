@@ -48,6 +48,11 @@ int main(void)
 	Display_Menu();
 
 	for(;;){
+		for (int i=0; i< 500000; i++);
+			    GPIOC-> ODR |= (1<<8);
+			    for (int i=0; i< 500000; i++);
+			    GPIOC-> ODR &= ~(1<<8);
+
 		Display_Menu();
 	}
 }

@@ -57,13 +57,7 @@ src/display.o: ../src/display.c D:/workspace/newLCDtest/inc/display.h \
  D:/workspace/newLCDtest/inc/battery_icons.h \
  D:/workspace/newLCDtest/inc/home_icons.h \
  D:/workspace/newLCDtest/inc/icons_config.h \
- D:/workspace/newLCDtest/inc/music_icons.h \
- D:/workspace/newLCDtest/inc/note_icons.h \
- D:/workspace/newLCDtest/inc/game_icons.h \
- D:/workspace/newLCDtest/inc/facebook_icons.h \
- D:/workspace/newLCDtest/inc/image_icons.h \
- D:/workspace/newLCDtest/inc/back_icon.h \
- D:/workspace/newLCDtest/inc/ironman.h
+ D:/workspace/newLCDtest/inc/back_icon.h
 
 D:/workspace/newLCDtest/inc/display.h:
 
@@ -183,16 +177,4 @@ D:/workspace/newLCDtest/inc/home_icons.h:
 
 D:/workspace/newLCDtest/inc/icons_config.h:
 
-D:/workspace/newLCDtest/inc/music_icons.h:
-
-D:/workspace/newLCDtest/inc/note_icons.h:
-
-D:/workspace/newLCDtest/inc/game_icons.h:
-
-D:/workspace/newLCDtest/inc/facebook_icons.h:
-
-D:/workspace/newLCDtest/inc/image_icons.h:
-
 D:/workspace/newLCDtest/inc/back_icon.h:
-
-D:/workspace/newLCDtest/inc/ironman.h:

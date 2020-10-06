@@ -1,0 +1,8 @@
+/HAL_Driver/
+/Utilities/
+/sources.mk
+/src/
+/startup/
+/makefile
+/objects.list
+/objects.mk
