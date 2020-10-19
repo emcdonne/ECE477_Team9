@@ -103,10 +103,18 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  GPIOC-> MODER |= (1<<16);
+  GPIOC-> ODR |= (1<<8);
+
+  int i;
+
   while (1)
   {
     /* USER CODE END WHILE */
-
+	for (i=0; i< 1000000; i++);
+		GPIOC-> ODR |= (1<<8);
+	for (i=0; i< 1000000; i++);
+		GPIOC-> ODR &= ~(1<<8);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
