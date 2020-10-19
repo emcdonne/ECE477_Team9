@@ -10,11 +10,17 @@ static void ILI9341_Send_Burst(unsigned short color, unsigned long len);
 //static void ILI9341_Draw_Double_Pixel(int x, int y, unsigned int color1, unsigned int color2);
 static void ILI9341_Draw_Char(int x, int y, unsigned int color, unsigned int phone, unsigned char charcode, unsigned char size);
 
+
 static unsigned int X_SIZE = 240;
 static unsigned int Y_SIZE = 320;
 
 unsigned char hh;
 static SPI_HandleTypeDef lcd_spi;
+
+void ILI_test() {
+	ILI9341_SPI_Init();
+	ILI9341_Send_Command(0x01);
+}
 
 void ILI9341_Init() {
 	ILI9341_SPI_Init();
@@ -159,6 +165,8 @@ static void ILI9341_SPI_Init() {
 	lcd_spi.Init.CLKPolarity 		= SPI_POLARITY_LOW;
 	lcd_spi.Init.CLKPhase 			= SPI_PHASE_1EDGE;
 	lcd_spi.Init.NSS 				= SPI_NSS_SOFT;
+	// below is tutorial code
+	/*
 	lcd_spi.Init.BaudRatePrescaler 	= SPI_BAUDRATEPRESCALER_2;
 	lcd_spi.Init.FirstBit 			= SPI_FIRSTBIT_MSB;
 	lcd_spi.Init.TIMode 			= SPI_TIMODE_DISABLE;
@@ -166,7 +174,18 @@ static void ILI9341_SPI_Init() {
 	lcd_spi.Init.CRCPolynomial 		= 10;
 	if (HAL_SPI_Init(&lcd_spi) != HAL_OK) {
 		Error_Handler();
-	}
+	}*/
+	lcd_spi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+	lcd_spi.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	lcd_spi.Init.TIMode = SPI_TIMODE_DISABLE;
+	lcd_spi.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+	lcd_spi.Init.CRCPolynomial = 7;
+	lcd_spi.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+	lcd_spi.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+	  if (HAL_SPI_Init(&lcd_spi) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
 }
 
 void ILI9341_SPI_Send(unsigned char data)
@@ -242,6 +261,7 @@ void ILI9341_Set_Address(unsigned int x1, unsigned int y1, unsigned int x2, unsi
 
 void ILI9341_Fill_Screen(unsigned int color)
 {
+	GPIOC-> ODR |= (1<<8);
 	ILI9341_Set_Address(0, 0, X_SIZE-1, Y_SIZE-1);
 	ILI9341_Send_Burst(color, (long)X_SIZE * (long)Y_SIZE);
 }

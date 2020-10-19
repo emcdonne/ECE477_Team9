@@ -42,14 +42,16 @@ void Display_Menu()
 	ILI9341_Fill_Screen(BLACK);
 	HAL_Delay(500);
 
+
 	/* Counting through all the bytes of those icons */
 	uint64_t k = 0;
 	/* Draw border for the menu */
     ILI9341_Draw_Empty_Rectangle(YELLOW, 10, 30, 310, 230);
-
+    GPIOC-> ODR &= ~(1<<8);
     /* Write something */
 	ILI9341_Draw_String(10,10,WHITE,BLACK,"Welcome!",2);
 
+	GPIOC-> ODR |= (1<<8);
 	/* Battery Icon in the top right corner */
     for(uint32_t j = 10; j < 20; j++) {
     	for(uint32_t i = 280; i < 300; i++) {
@@ -57,7 +59,7 @@ void Display_Menu()
 				k++;
 			}
 	}
-
+    GPIOC-> ODR &= ~(1<<8);
     /* =================================List of Icons================================= */
 
     /* ===========================Icon No.1=========================== */
@@ -77,7 +79,7 @@ void Display_Menu()
 
     /* ===========================Icon No.6=========================== */
     //Display_Round_Icon_40x40(image_icon_40x40, 259, 179, 40);
-
+    GPIOC-> ODR |= (1<<8);
 	CS_OFF;
 }
 
