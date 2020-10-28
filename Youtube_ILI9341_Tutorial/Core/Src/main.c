@@ -43,8 +43,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
-
-USART_HandleTypeDef husart2;
+SPI_HandleTypeDef hspi2;
 
 /* USER CODE BEGIN PV */
 
@@ -54,7 +53,7 @@ USART_HandleTypeDef husart2;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
-static void MX_USART2_Init(void);
+static void MX_SPI2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -93,12 +92,15 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
-  MX_USART2_Init();
+  MX_SPI2_Init();
 
   /* USER CODE BEGIN 2 */
   ILI9341_Init(&hspi1, LCD_CS_GPIO_Port, LCD_CS_Pin, LCD_DC_GPIO_Port, LCD_DC_Pin, LCD_RST_GPIO_Port, LCD_RST_Pin);
-  ILI9341_setRotation(2); //	landscape
-  ILI9341_Fill(COLOR_YELLOW);
+
+  TextTest();
+
+  HAL_Delay(10000);
+  ClearScreen();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -198,36 +200,42 @@ static void MX_SPI1_Init(void)
 }
 
 /**
-  * @brief USART2 Initialization Function
+  * @brief SPI2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_USART2_Init(void)
+static void MX_SPI2_Init(void)
 {
 
-  /* USER CODE BEGIN USART2_Init 0 */
+  /* USER CODE BEGIN SPI2_Init 0 */
 
-  /* USER CODE END USART2_Init 0 */
+  /* USER CODE END SPI2_Init 0 */
 
-  /* USER CODE BEGIN USART2_Init 1 */
+  /* USER CODE BEGIN SPI2_Init 1 */
 
-  /* USER CODE END USART2_Init 1 */
-  husart2.Instance = USART2;
-  husart2.Init.BaudRate = 38400;
-  husart2.Init.WordLength = USART_WORDLENGTH_8B;
-  husart2.Init.StopBits = USART_STOPBITS_1;
-  husart2.Init.Parity = USART_PARITY_NONE;
-  husart2.Init.Mode = USART_MODE_TX_RX;
-  husart2.Init.CLKPolarity = USART_POLARITY_LOW;
-  husart2.Init.CLKPhase = USART_PHASE_1EDGE;
-  husart2.Init.CLKLastBit = USART_LASTBIT_DISABLE;
-  if (HAL_USART_Init(&husart2) != HAL_OK)
+  /* USER CODE END SPI2_Init 1 */
+  /* SPI2 parameter configuration*/
+  hspi2.Instance = SPI2;
+  hspi2.Init.Mode = SPI_MODE_MASTER;
+  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi2.Init.CRCPolynomial = 7;
+  hspi2.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+  hspi2.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  if (HAL_SPI_Init(&hspi2) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART2_Init 2 */
+  /* USER CODE BEGIN SPI2_Init 2 */
 
-  /* USER CODE END USART2_Init 2 */
+  /* USER CODE END SPI2_Init 2 */
 
 }
 
@@ -238,19 +246,12 @@ static void MX_USART2_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
-	// CS to PB6
-	// RESET to PA9
-	// DC to PC7
-	// MOSI to PA7
-	// SCK to PA5
-	// LED to 3V
-	// MISO to PA6
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_RESET);
@@ -259,7 +260,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, TS_CS_Pin|LCD_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : LCD_DC_Pin */
   GPIO_InitStruct.Pin = LCD_DC_Pin;
@@ -275,16 +276,58 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LCD_RST_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LCD_CS_Pin */
-  GPIO_InitStruct.Pin = LCD_CS_Pin;
+  /*Configure GPIO pins : TS_CS_Pin LCD_CS_Pin */
+  GPIO_InitStruct.Pin = TS_CS_Pin|LCD_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LCD_CS_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
 /* USER CODE BEGIN 4 */
+
+void ColorTest() {
+	// Implement Software test 2.1
+	ILI9341_Fill(COLOR_GREEN);
+	ILI9341_Fill(COLOR_BLUE);
+	ILI9341_Fill(COLOR_RED);
+	ILI9341_Fill(COLOR_BLACK);
+}
+
+void ClearScreen() {
+	// Implement Software test 2.2
+	// Right now resets everything, can't even init afterwards...
+	// Might be better just to use Init again
+	ILI9341_SendCommand(ILI9341_RESET);
+}
+
+void RectangleTest() {
+	// Implement Software test 2.3
+	unsigned int h = ILI9341_HEIGHT;
+	unsigned int w = ILI9341_WIDTH;
+	ILI9341_setRotation(2);
+	ILI9341_Fill_Rect(h / 2, 0, h - 1, w / 2, COLOR_GREEN);
+	HAL_Delay(1000);
+	ILI9341_Fill_Rect(0, w / 2, h / 2, w - 1, COLOR_BLUE);
+	HAL_Delay(1000);
+	ILI9341_Fill_Rect(h / 4, w / 4, h * 3 / 4, w * 3 / 4, COLOR_RED);
+}
+
+void TextTest() {
+	// Implement Software test 2.4
+	unsigned int h = ILI9341_HEIGHT;
+	unsigned int w = ILI9341_WIDTH;
+	ILI9341_setRotation(1); //	portrait
+	char* number = "8675309";
+	char* purdue = "PURDUE UNIVERSITY";
+	char* team1 = "ECE 477";
+	char* team2 = " Team 9";
+	ILI9341_printText(number, w/2-4, 0, COLOR_WHITE, COLOR_BLACK, 3);
+	ILI9341_printText(purdue, 0, h-16, COLOR_YELLOW, COLOR_BLACK, 2);
+	ILI9341_printText(team1, 0, h/3, COLOR_BLACK, COLOR_WHITE, 4);
+	ILI9341_printText(team2, 0, h/3+34, COLOR_BLACK, COLOR_WHITE, 4);
+}
 
 /* USER CODE END 4 */
 
