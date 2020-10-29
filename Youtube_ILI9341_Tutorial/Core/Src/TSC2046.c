@@ -34,7 +34,7 @@ static TS_CALIBRATE_Def myTS_Calibrate;
 static TS_TOUCH_RAW_Def localRawTouch;
 
 //List of defines and typedefs
-#define _TS_CS_ENBALE		HAL_GPIO_WritePin(tsCS_GPIO, tsCS_PIN, GPIO_PIN_RESET);
+#define _TS_CS_ENABLE		HAL_GPIO_WritePin(tsCS_GPIO, tsCS_PIN, GPIO_PIN_RESET);
 #define _TS_CS_DISABLE		HAL_GPIO_WritePin(tsCS_GPIO, tsCS_PIN, GPIO_PIN_SET);
 
 //Functions definitions
@@ -44,7 +44,7 @@ uint16_t TSC2046_SendCommand(uint8_t cmd)
 	uint8_t spiBuf[3] = {0,0,0};
 	uint16_t return16=0;
 
-	_TS_CS_ENBALE;
+	_TS_CS_ENABLE;
 	spiBuf[0] = cmd;
 	HAL_SPI_Transmit(&tsSPIhandle, spiBuf, 1, 10);
 	//Wait for response (3 ms)
@@ -58,6 +58,7 @@ uint16_t TSC2046_SendCommand(uint8_t cmd)
 //2. Calibrate resistive touch panel
 void TSC2046_Calibrate(void)
 {
+
 	uint16_t watchVar1=0;
 	TS_TOUCH_RAW_Def myRawTouchDef;
 	//Get Top-Left corner calibration coordinate

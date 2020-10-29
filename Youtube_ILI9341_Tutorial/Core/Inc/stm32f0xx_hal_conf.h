@@ -49,8 +49,8 @@
 /*#define HAL_RTC_MODULE_ENABLED   */
 #define HAL_SPI_MODULE_ENABLED
 /*#define HAL_TIM_MODULE_ENABLED   */
-/*#define HAL_UART_MODULE_ENABLED   */
-#define HAL_USART_MODULE_ENABLED
+#define HAL_UART_MODULE_ENABLED
+/*#define HAL_USART_MODULE_ENABLED   */
 /*#define HAL_IRDA_MODULE_ENABLED   */
 /*#define HAL_SMARTCARD_MODULE_ENABLED   */
 /*#define HAL_SMBUS_MODULE_ENABLED   */
@@ -284,9 +284,6 @@
  #include "stm32f0xx_hal_tsc.h"
 #endif /* HAL_TSC_MODULE_ENABLED */
 
-#ifdef HAL_UART_MODULE_ENABLED
- #include "stm32f0xx_hal_uart.h"
-#endif /* HAL_UART_MODULE_ENABLED */
 
 #ifdef HAL_USART_MODULE_ENABLED
  #include "stm32f0xx_hal_usart.h"

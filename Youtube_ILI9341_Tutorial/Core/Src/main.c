@@ -96,11 +96,17 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   ILI9341_Init(&hspi1, LCD_CS_GPIO_Port, LCD_CS_Pin, LCD_DC_GPIO_Port, LCD_DC_Pin, LCD_RST_GPIO_Port, LCD_RST_Pin);
+  ILI9341_setRotation(4);
+  //ILI9341_Fill(COLOR_NAVY);
 
-  TextTest();
+   TSC2046_Begin(&hspi2, TS_CS_GPIO_Port, TS_CS_Pin);
+   TSC2046_getRaw_X();
+   //TSC2046_Calibrate();
+   ILI9341_Fill(COLOR_GREEN);
+  //TextTest();
 
-  HAL_Delay(10000);
-  ClearScreen();
+  //HAL_Delay(10000);
+  //ClearScreen();
   /* USER CODE END 2 */
 
   /* Infinite loop */
