@@ -60,7 +60,7 @@ static void MX_SPI2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+TS_TOUCH_DATA_Def myTS_Handle;
 /* USER CODE END 0 */
 
 /**
@@ -95,14 +95,14 @@ int main(void)
   MX_SPI2_Init();
 
   /* USER CODE BEGIN 2 */
-  ILI9341_Init(&hspi1, LCD_CS_GPIO_Port, LCD_CS_Pin, LCD_DC_GPIO_Port, LCD_DC_Pin, LCD_RST_GPIO_Port, LCD_RST_Pin);
-  ILI9341_setRotation(4);
+  ILI9341_Init(&hspi2, LCD_CS_GPIO_Port, LCD_CS_Pin, LCD_DC_GPIO_Port, LCD_DC_Pin, LCD_RST_GPIO_Port, LCD_RST_Pin);
+  ILI9341_setRotation(2);
   //ILI9341_Fill(COLOR_NAVY);
 
-   TSC2046_Begin(&hspi2, TS_CS_GPIO_Port, TS_CS_Pin);
-   TSC2046_getRaw_X();
-   //TSC2046_Calibrate();
-   ILI9341_Fill(COLOR_GREEN);
+  TSC2046_Begin(&hspi1, TS_CS_GPIO_Port, TS_CS_Pin);
+  //TSC2046_getRaw_X();
+  TSC2046_Calibrate();
+  ILI9341_Fill(COLOR_BLACK);
   //TextTest();
 
   //HAL_Delay(10000);
@@ -115,14 +115,29 @@ int main(void)
   GPIOC-> ODR |= (1<<8);
 
   int i;
-
+  char xnum[5];
+  char ynum[5];
+  unsigned int h = ILI9341_HEIGHT;
+  unsigned int w = ILI9341_WIDTH;
   while (1)
   {
     /* USER CODE END WHILE */
+	  myTS_Handle = TSC2046_GetTouchData();
+	  if(myTS_Handle.isPressed) {
+		  // draw circle
+		  itoa(myTS_Handle.X, xnum, 10);
+		  itoa(myTS_Handle.Y, ynum, 10);
+		  ILI9341_printText(xnum, 0, 0, COLOR_WHITE, COLOR_BLACK, 3);
+		  ILI9341_printText(ynum, 100, 0, COLOR_WHITE, COLOR_BLACK, 3);
+		  //ILI9341_fillCircle(myTS_Handle.X, myTS_Handle.Y, 1, COLOR_ORANGE);
+	  }
+
+	  /*
 	for (i=0; i< 1000000; i++);
 		GPIOC-> ODR |= (1<<8);
 	for (i=0; i< 1000000; i++);
 		GPIOC-> ODR &= ~(1<<8);
+		*/
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -188,7 +203,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -228,7 +243,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;

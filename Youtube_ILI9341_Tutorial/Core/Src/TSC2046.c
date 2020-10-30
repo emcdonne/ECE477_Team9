@@ -49,8 +49,14 @@ uint16_t TSC2046_SendCommand(uint8_t cmd)
 	HAL_SPI_Transmit(&tsSPIhandle, spiBuf, 1, 10);
 	//Wait for response (3 ms)
 	HAL_Delay(3);
-	if(HAL_SPI_Receive(&tsSPIhandle, &spiBuf[1], 2, 10) == HAL_OK) return16 = (spiBuf[1]<<4) + (spiBuf[2]>>4);
+	// OG code
+	//if(HAL_SPI_Receive(&tsSPIhandle, &spiBuf[1], 2, 10) == HAL_OK) return16 = (spiBuf[1]<<4) + (spiBuf[2]>>4);
+	// MY CODE
+	if(HAL_SPI_Receive(&tsSPIhandle, &spiBuf[1], 1, 10) == HAL_OK) return16 = spiBuf[1]<<4;
 	else return16 = 0;
+
+	if(HAL_SPI_Receive(&tsSPIhandle, &spiBuf[2], 1, 10) == HAL_OK) return16 += spiBuf[2]>>4;
+	else return16 += 0;
 
 
 	return return16;

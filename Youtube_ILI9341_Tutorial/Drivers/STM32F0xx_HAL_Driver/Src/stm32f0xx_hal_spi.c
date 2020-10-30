@@ -1399,7 +1399,15 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
       {
         if (hspi->TxXferCount > 1U)
         {
-          hspi->Instance->DR = *((uint16_t *)hspi->pTxBuffPtr);
+          // OG LINE
+           hspi->Instance->DR = *((uint16_t *)hspi->pTxBuffPtr);
+          // MY LINES
+           /*
+          if(*((uint16_t *)hspi->pTxBuffPtr) == 0)
+        	  hspi->Instance->DR = 0;
+          else
+        	  hspi->Instance->DR = *((uint16_t *)hspi->pTxBuffPtr);
+        	  */
           hspi->pTxBuffPtr += sizeof(uint16_t);
           hspi->TxXferCount -= 2U;
         }
