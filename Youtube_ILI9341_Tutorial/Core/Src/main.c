@@ -76,7 +76,8 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+
+   HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -99,10 +100,10 @@ int main(void)
   ILI9341_setRotation(2);
   //ILI9341_Fill(COLOR_NAVY);
 
-  TSC2046_Begin(&hspi1, TS_CS_GPIO_Port, TS_CS_Pin);
+      //TSC2046_Begin(&hspi1, TS_CS_GPIO_Port, TS_CS_Pin);
   //TSC2046_getRaw_X();
-  TSC2046_Calibrate();
-  ILI9341_Fill(COLOR_BLACK);
+      //TSC2046_Calibrate();
+      //ILI9341_Fill(COLOR_BLACK);
   //TextTest();
 
   //HAL_Delay(10000);
@@ -111,35 +112,38 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  GPIOC-> MODER |= (1<<16);
-  GPIOC-> ODR |= (1<<8);
+      //  GPIOC-> MODER |= (1<<16);
+      //  GPIOC-> ODR |= (1<<8);
 
   int i;
   char xnum[5];
   char ynum[5];
   unsigned int h = ILI9341_HEIGHT;
   unsigned int w = ILI9341_WIDTH;
-  while (1)
-  {
-    /* USER CODE END WHILE */
-	  myTS_Handle = TSC2046_GetTouchData();
-	  if(myTS_Handle.isPressed) {
-		  // draw circle
-		  itoa(myTS_Handle.X, xnum, 10);
-		  itoa(myTS_Handle.Y, ynum, 10);
-		  ILI9341_printText(xnum, 0, 0, COLOR_WHITE, COLOR_BLACK, 3);
-		  ILI9341_printText(ynum, 100, 0, COLOR_WHITE, COLOR_BLACK, 3);
-		  //ILI9341_fillCircle(myTS_Handle.X, myTS_Handle.Y, 1, COLOR_ORANGE);
-	  }
+//  while (1)
+//  {
+//    /* USER CODE END WHILE */
+//	  myTS_Handle = TSC2046_GetTouchData();
+//	  if(myTS_Handle.isPressed) {
+//		  // draw circle
+//		  itoa(myTS_Handle.X, xnum, 10);
+//		  itoa(myTS_Handle.Y, ynum, 10);
+//		  ILI9341_printText(xnum, 0, 0, COLOR_WHITE, COLOR_BLACK, 3);
+//		  ILI9341_printText(ynum, 100, 0, COLOR_WHITE, COLOR_BLACK, 3);
+//		  ILI9341_fillCircle(myTS_Handle.X, myTS_Handle.Y, 1, COLOR_ORANGE);
+//	  }
+//
+//	  /*
+//	for (i=0; i< 1000000; i++);
+//		GPIOC-> ODR |= (1<<8);
+//	for (i=0; i< 1000000; i++);
+//		GPIOC-> ODR &= ~(1<<8);
+//		*/
+//    /* USER CODE BEGIN 3 */
+//  }
 
-	  /*
-	for (i=0; i< 1000000; i++);
-		GPIOC-> ODR |= (1<<8);
-	for (i=0; i< 1000000; i++);
-		GPIOC-> ODR &= ~(1<<8);
-		*/
-    /* USER CODE BEGIN 3 */
-  }
+  memoryTest();
+
   /* USER CODE END 3 */
 }
 
@@ -350,6 +354,18 @@ void TextTest() {
 	ILI9341_printText(team2, 0, h/3+34, COLOR_BLACK, COLOR_WHITE, 4);
 }
 
+void memoryTest() {
+    //ILI9341_printText(data, 0, 0, COLOR_DCYAN, COLOR_WHITE, 3);
+    uint32_t address = 0x0800F800;
+    unsigned char * output;
+    output = (unsigned char *) flash_read(address, 2);
+    ILI9341_printText(output, 0, 0, COLOR_DCYAN, COLOR_WHITE, 3);
+    uint64_t * data = 0x61;
+    flash_initialize();
+    flash_erase(address, 2);
+    flash_write(address, data, 2);
+    flash_deinitialize();
+}
 /* USER CODE END 4 */
 
 /**
