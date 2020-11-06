@@ -136,6 +136,7 @@ void ILI9341_fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_
 //11. Text printing functions
 void ILI9341_drawChar(int16_t x, int16_t y, unsigned char c, uint16_t color, uint16_t bg, uint8_t size);
 void ILI9341_printText(char text[], int16_t x, int16_t y, uint16_t color, uint16_t bg, uint8_t size);
+void ILI9341_printTextLength(char text[], int16_t x, int16_t y, uint16_t color, uint16_t bg, uint8_t size, uint8_t length);
 //12. Image print (RGB 565, 2 bytes per pixel)
 void ILI9341_printImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint8_t *data, uint32_t size);
 //13. Set screen rotation

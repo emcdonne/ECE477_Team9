@@ -31,11 +31,11 @@ uint8_t flash_write(volatile uint32_t address, uint64_t * data, uint16_t size)
    return 0;
 }
 
-uint64_t * flash_read(volatile uint32_t address, uint16_t size) {
-    uint64_t * output;
+unsigned char * flash_read(volatile uint32_t address, uint16_t size) {
+    unsigned char * output;
     uint32_t addr = address;
     for(int i = 0; i < size; i++) {
-        output[i] = * (uint64_t *)addr;
+        output[i] = * (unsigned char *)addr;
         addr = addr + i * 4;
     }
     return output;
