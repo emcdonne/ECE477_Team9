@@ -34,6 +34,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+int convertX(int);
+int convertY(int);
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -114,69 +116,36 @@ int main(void)
   GPIOC-> MODER |= (1<<16);
   GPIOC-> ODR |= (1<<8);
 
-  int i;
-  char xnum[5];
-  char ynum[5];
+  int xnum;
+  int ynum;
   char xraw[5];
   char yraw[5];
   unsigned int h = ILI9341_HEIGHT;
   unsigned int w = ILI9341_WIDTH;
 
-  TS_TOUCH_RAW_Def myTS_RawHandle;
   TS_TOUCH_DATA_Def myTS_Handle;
-  ILI9341_Fill_Rect(0, 0, h/2 , w, COLOR_GREEN);
-  ILI9341_Fill_Rect(h/2+1, 0, h, w, COLOR_BLUE);
+  ILI9341_Fill_Rect(0, 0, h , w, COLOR_WHITE);
+  ILI9341_Fill_Rect(0, 0, 40, 40, COLOR_RED);
 
-  int leftTouch = 0;
-  int rightTouch = 0;
-  ILI9341_printText("0", h/4, 0,  COLOR_BLUE, COLOR_GREEN, 3);
-  ILI9341_printText("0", 3*h/4, 0, COLOR_GREEN, COLOR_BLUE, 3);
-  int touch;
   while (1)
   {
-	  //TSC2046_Calibrate();
     /* USER CODE END WHILE */
-	  /*
-	  myTS_Handle = TSC2046_GetTouchData();
-	  if(TSC2046_getRaw_Z()>50) {
-		  // draw circle
-		  itoa(myTS_Handle.X,  xnum, 10);
-		  itoa(myTS_Handle.Y, ynum, 10);
-		  itoa(myTS_Handle.rawX, xraw, 10);
-		  itoa(myTS_Handle.rawY, yraw, 10);
-		  ILI9341_printText(xnum, 0, 0, COLOR_WHITE, COLOR_BLACK, 3);
-		  ILI9341_printText(ynum, 0, 50, COLOR_WHITE, COLOR_BLACK, 3);
-		  ILI9341_printText(xraw, 200, 0, COLOR_WHITE, COLOR_BLACK, 3);
-		  ILI9341_printText(yraw, 200, 50, COLOR_WHITE, COLOR_BLACK, 3);
-	  }
-	  */
-	  touch = 1;
-	  for(i = 0; i < 10; i++){
-		  if(TSC2046_getRaw_Z() <= 50) {
-			  touch = 0;
-		  }
-	  }
-	  if(touch) {
+	  if(TSC2046_getRaw_Z() > 50) {
 		  myTS_Handle = TSC2046_GetTouchData();
-		  //ILI9341_printText(xraw, 200, 0, COLOR_WHITE, COLOR_BLACK, 3);
-		  //itoa(myTS_Handle.rawX, xraw, 10);
-	  		  // draw circle
-		  if(myTS_Handle.rawX < 3000){
-			  leftTouch += 1;
-			  itoa(leftTouch, xnum, 10);
-			  ILI9341_printText(xnum, h/4, 0, COLOR_BLUE, COLOR_GREEN, 3);
+		  xnum = convertX(myTS_Handle.rawX);
+		  ynum = convertY(myTS_Handle.rawY);
+		  itoa(xnum, xraw, 10);
+		  itoa(ynum, yraw, 10);
+		  if(xnum < 40 && ynum < 40) {
+			  ILI9341_Fill_Rect(0, 0, h , w, COLOR_WHITE);
+			  ILI9341_Fill_Rect(0, 0, 40, 40, COLOR_RED);
 		  }
-		  if(myTS_Handle.rawX >= 3000) {
-			  rightTouch += 1;
-			  itoa(rightTouch, ynum, 10);
-			  ILI9341_printText(ynum, 3*h/4, 0, COLOR_GREEN, COLOR_BLUE, 3);
+		  else {
+			  ILI9341_fillCircle(convertX(myTS_Handle.rawX), convertY(myTS_Handle.rawY), 2, COLOR_BLACK);
 		  }
-		  HAL_Delay(100);
-
+		  // draw circle
 	  }
-
-
-	  /*
+	/*
 	for (i=0; i< 1000000; i++);
 		GPIOC-> ODR |= (1<<8);
 	for (i=0; i< 1000000; i++);
@@ -392,6 +361,32 @@ void TextTest() {
 	ILI9341_printText(purdue, 0, h-16, COLOR_YELLOW, COLOR_BLACK, 2);
 	ILI9341_printText(team1, 0, h/3, COLOR_BLACK, COLOR_WHITE, 4);
 	ILI9341_printText(team2, 0, h/3+34, COLOR_BLACK, COLOR_WHITE, 4);
+}
+
+int convertX(int xnum){
+	unsigned int h = ILI9341_HEIGHT;
+	unsigned int w = ILI9341_WIDTH;
+	if (xnum < 2170) {
+		xnum = 0;
+	}
+	else {
+		xnum = (xnum - 2170);
+	}
+	xnum = xnum * h / 1721;
+	return xnum;
+}
+
+int convertY(int ynum){
+	unsigned int h = ILI9341_HEIGHT;
+	unsigned int w = ILI9341_WIDTH;
+	if (ynum < 2250) {
+		ynum = 0;
+	}
+	else {
+		ynum = ynum - 2250;
+	}
+	ynum = ynum * w / 1705;
+	return ynum;
 }
 
 /* USER CODE END 4 */
