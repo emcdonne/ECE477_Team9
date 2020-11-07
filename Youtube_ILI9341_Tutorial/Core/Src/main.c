@@ -36,6 +36,9 @@
 /* USER CODE BEGIN PD */
 int convertX(int);
 int convertY(int);
+
+unsigned int h = ILI9341_HEIGHT;
+unsigned int w = ILI9341_WIDTH;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -99,16 +102,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   ILI9341_Init(&hspi2, LCD_CS_GPIO_Port, LCD_CS_Pin, LCD_DC_GPIO_Port, LCD_DC_Pin, LCD_RST_GPIO_Port, LCD_RST_Pin);
   ILI9341_setRotation(2);
-  //ILI9341_Fill(COLOR_NAVY);
-
   TSC2046_Begin(&hspi1, TS_CS_GPIO_Port, TS_CS_Pin);
-  //TSC2046_getRaw_X();
-  //TSC2046_Calibrate();
-  //ILI9341_Fill(COLOR_BLACK);
-  //TextTest();
-
-  //HAL_Delay(10000);
-  //ClearScreen();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -124,12 +118,11 @@ int main(void)
   unsigned int w = ILI9341_WIDTH;
 
   TS_TOUCH_DATA_Def myTS_Handle;
-  ILI9341_Fill_Rect(0, 0, h , w, COLOR_WHITE);
-  ILI9341_Fill_Rect(0, 0, 40, 40, COLOR_RED);
 
   while (1)
   {
     /* USER CODE END WHILE */
+	  TouchTest();
 	  if(TSC2046_getRaw_Z() > 50) {
 		  myTS_Handle = TSC2046_GetTouchData();
 		  xnum = convertX(myTS_Handle.rawX);
@@ -338,8 +331,6 @@ void ClearScreen() {
 
 void RectangleTest() {
 	// Implement Software test 2.3
-	unsigned int h = ILI9341_HEIGHT;
-	unsigned int w = ILI9341_WIDTH;
 	ILI9341_setRotation(2);
 	ILI9341_Fill_Rect(h / 2, 0, h - 1, w / 2, COLOR_GREEN);
 	HAL_Delay(1000);
@@ -350,8 +341,6 @@ void RectangleTest() {
 
 void TextTest() {
 	// Implement Software test 2.4
-	unsigned int h = ILI9341_HEIGHT;
-	unsigned int w = ILI9341_WIDTH;
 	ILI9341_setRotation(1); //	portrait
 	char* number = "8675309";
 	char* purdue = "PURDUE UNIVERSITY";
@@ -363,9 +352,71 @@ void TextTest() {
 	ILI9341_printText(team2, 0, h/3+34, COLOR_BLACK, COLOR_WHITE, 4);
 }
 
+void TouchTest() {
+	// Implement "Software test 2.7"
+	// Modified, more rigorous touch test
+	// More of a mockup of menus
+	TS_TOUCH_DATA_Def myTS_Handle;
+	int touches[4] = {0, 0, 0, 0};
+	int xnum;
+	int ynum;
+
+	ILI9341_Fill_Rect(0, 0, h/2-1, w/2-1, COLOR_RED);
+	ILI9341_Fill_Rect(0, w/2, h/2-1, w, COLOR_GREEN);
+	ILI9341_Fill_Rect(h/2, 0, h, w/2-1, COLOR_BLUE);
+	ILI9341_Fill_Rect(h/2, w/2, h, w, COLOR_YELLOW);
+	while(1) {
+		if(TSC2046_getRaw_Z() > 50) {
+			myTS_Handle = TSC2046_GetTouchData();
+			xnum = convertX(myTS_Handle.rawX);
+			ynum = convertY(myTS_Handle.rawY);
+
+			if(xnum < h/2 && ynum < w/2) {	// TOP LEFT
+				if(touches[0] == 0){
+					ILI9341_Fill_Rect(0, 0, h/2-1, w/2-1, COLOR_WHITE);
+					touches[0] = 1;
+				}
+				else {
+					ILI9341_Fill_Rect(0, 0, h/2-1, w/2-1, COLOR_RED);
+					touches[0] = 0;
+				}
+			}
+			else if(xnum < h/2) {	// BOT LEFT
+				if(touches[1] == 0){
+					ILI9341_Fill_Rect(0, w/2, h/2-1, w, COLOR_DGRAY);
+					touches[1] = 1;
+				}
+				else {
+					ILI9341_Fill_Rect(0, w/2, h/2-1, w, COLOR_GREEN);
+					touches[1] = 0;
+				}
+			}
+			else if(ynum < h/2) {	// TOP RIGHT
+				if(touches[2] == 0){
+					ILI9341_Fill_Rect(h/2, 0, h, w/2-1, COLOR_LGRAY);
+					touches[2] = 1;
+				}
+				else {
+					ILI9341_Fill_Rect(h/2, 0, h, w/2-1, COLOR_BLUE);
+					touches[2] = 0;
+				}
+			}
+			else {
+				if(touches[3] == 0){
+					ILI9341_Fill_Rect(h/2, w/2, h, w, COLOR_BLACK);
+					touches[3] = 1;
+				}
+				else {
+					ILI9341_Fill_Rect(h/2, w/2, h, w, COLOR_YELLOW);
+					touches[3] = 0;
+				}
+			}
+		}
+	}
+
+}
+
 int convertX(int xnum){
-	unsigned int h = ILI9341_HEIGHT;
-	unsigned int w = ILI9341_WIDTH;
 	if (xnum < 2170) {
 		xnum = 0;
 	}
@@ -377,10 +428,11 @@ int convertX(int xnum){
 }
 
 int convertY(int ynum){
-	unsigned int h = ILI9341_HEIGHT;
-	unsigned int w = ILI9341_WIDTH;
 	if (ynum < 2250) {
 		ynum = 0;
+	}
+	else if (ynum > 4000) {
+		ynum = w;
 	}
 	else {
 		ynum = ynum - 2250;
