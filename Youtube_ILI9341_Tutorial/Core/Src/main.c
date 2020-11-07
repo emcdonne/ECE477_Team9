@@ -60,7 +60,7 @@ static void MX_SPI2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-TS_TOUCH_DATA_Def myTS_Handle;
+
 /* USER CODE END 0 */
 
 /**
@@ -101,8 +101,8 @@ int main(void)
 
   TSC2046_Begin(&hspi1, TS_CS_GPIO_Port, TS_CS_Pin);
   //TSC2046_getRaw_X();
-  TSC2046_Calibrate();
-  ILI9341_Fill(COLOR_BLACK);
+  //TSC2046_Calibrate();
+  //ILI9341_Fill(COLOR_BLACK);
   //TextTest();
 
   //HAL_Delay(10000);
@@ -117,20 +117,64 @@ int main(void)
   int i;
   char xnum[5];
   char ynum[5];
+  char xraw[5];
+  char yraw[5];
   unsigned int h = ILI9341_HEIGHT;
   unsigned int w = ILI9341_WIDTH;
+
+  TS_TOUCH_RAW_Def myTS_RawHandle;
+  TS_TOUCH_DATA_Def myTS_Handle;
+  ILI9341_Fill_Rect(0, 0, h/2 , w, COLOR_GREEN);
+  ILI9341_Fill_Rect(h/2+1, 0, h, w, COLOR_BLUE);
+
+  int leftTouch = 0;
+  int rightTouch = 0;
+  ILI9341_printText("0", h/4, 0,  COLOR_BLUE, COLOR_GREEN, 3);
+  ILI9341_printText("0", 3*h/4, 0, COLOR_GREEN, COLOR_BLUE, 3);
+  int touch;
   while (1)
   {
+	  //TSC2046_Calibrate();
     /* USER CODE END WHILE */
+	  /*
 	  myTS_Handle = TSC2046_GetTouchData();
-	  if(myTS_Handle.isPressed) {
+	  if(TSC2046_getRaw_Z()>50) {
 		  // draw circle
-		  itoa(myTS_Handle.X, xnum, 10);
+		  itoa(myTS_Handle.X,  xnum, 10);
 		  itoa(myTS_Handle.Y, ynum, 10);
+		  itoa(myTS_Handle.rawX, xraw, 10);
+		  itoa(myTS_Handle.rawY, yraw, 10);
 		  ILI9341_printText(xnum, 0, 0, COLOR_WHITE, COLOR_BLACK, 3);
-		  ILI9341_printText(ynum, 100, 0, COLOR_WHITE, COLOR_BLACK, 3);
-		  //ILI9341_fillCircle(myTS_Handle.X, myTS_Handle.Y, 1, COLOR_ORANGE);
+		  ILI9341_printText(ynum, 0, 50, COLOR_WHITE, COLOR_BLACK, 3);
+		  ILI9341_printText(xraw, 200, 0, COLOR_WHITE, COLOR_BLACK, 3);
+		  ILI9341_printText(yraw, 200, 50, COLOR_WHITE, COLOR_BLACK, 3);
 	  }
+	  */
+	  touch = 1;
+	  for(i = 0; i < 10; i++){
+		  if(TSC2046_getRaw_Z() <= 50) {
+			  touch = 0;
+		  }
+	  }
+	  if(touch) {
+		  myTS_Handle = TSC2046_GetTouchData();
+		  //ILI9341_printText(xraw, 200, 0, COLOR_WHITE, COLOR_BLACK, 3);
+		  //itoa(myTS_Handle.rawX, xraw, 10);
+	  		  // draw circle
+		  if(myTS_Handle.rawX < 3000){
+			  leftTouch += 1;
+			  itoa(leftTouch, xnum, 10);
+			  ILI9341_printText(xnum, h/4, 0, COLOR_BLUE, COLOR_GREEN, 3);
+		  }
+		  if(myTS_Handle.rawX >= 3000) {
+			  rightTouch += 1;
+			  itoa(rightTouch, ynum, 10);
+			  ILI9341_printText(ynum, 3*h/4, 0, COLOR_GREEN, COLOR_BLUE, 3);
+		  }
+		  HAL_Delay(100);
+
+	  }
+
 
 	  /*
 	for (i=0; i< 1000000; i++);

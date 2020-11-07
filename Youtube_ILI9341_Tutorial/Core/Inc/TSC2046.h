@@ -35,6 +35,7 @@ typedef struct
 {
 	uint16_t x_touch;
 	uint16_t y_touch;
+	uint16_t z_touch;
 }TS_TOUCH_RAW_Def;
 
 //2. Calibration typedef
@@ -62,6 +63,8 @@ typedef struct
 	bool isPressed;
 	uint16_t X;
 	uint16_t Y;
+	uint16_t rawX;
+	uint16_t rawY;
 }TS_TOUCH_DATA_Def;
 
 //Functions prototypes

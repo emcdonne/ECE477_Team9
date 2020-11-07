@@ -158,6 +158,7 @@ TS_TOUCH_RAW_Def TSC2046_GetRawTouch(void)
 			myTS_Calibrate.Height = 240;
 			break;
 	}
+	localRawTouch.z_touch = TSC2046_getRaw_Z();
 
 	return localRawTouch;
 }
@@ -235,8 +236,11 @@ TS_TOUCH_DATA_Def TSC2046_GetTouchData(void)
 
 	//X_Touch value
 	myTsData.X = myTS_Calibrate.Scale_X*localRawTouch.x_touch + myTS_Calibrate.Bias_X;
+	myTsData.rawX = localRawTouch.x_touch;
 	//Y_Touch value
 	myTsData.Y = myTS_Calibrate.Scale_Y*localRawTouch.y_touch + myTS_Calibrate.Bias_Y;
+	myTsData.rawY = localRawTouch.y_touch;
+
 
 	return myTsData;
 }
