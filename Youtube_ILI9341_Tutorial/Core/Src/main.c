@@ -354,35 +354,6 @@ void TextTest() {
 	ILI9341_printText(team2, 0, h/3+34, COLOR_BLACK, COLOR_WHITE, 4);
 }
 
-void memoryTest() {
-    //ILI9341_printText(data, 0, 0, COLOR_DCYAN, COLOR_WHITE, 3);
-    uint32_t address = 0x0800F800;
-    uint16_t * out1;
-    uint16_t * out2;
-    unsigned int h = ILI9341_HEIGHT;
-    unsigned int w = ILI9341_WIDTH;
-    unsigned char output[2];
-    out1 = (uint16_t *) address;
-    out2 = (uint16_t *) (address + 4);
-    output[0] = (unsigned char) (*out1);
-    output[1] = (unsigned char) (*out2);
-   // output[0] = (unsigned char)&address;
-   // output[1] = (unsigned char)(&address + 4);
-    //output = flash_read(address, 2);
-    char * old = "old:";
-    char * new = "new:";
-    ILI9341_printText(old, 0, 0, COLOR_DCYAN, COLOR_WHITE, 3);
-    ILI9341_printText(new, 0, h/2, COLOR_DCYAN, COLOR_WHITE, 3);
-    ILI9341_printTextLength(output, w/2, 0, COLOR_DCYAN, COLOR_WHITE, 3, 2);
-    uint64_t data[2] = {48,50};
-    output[0] = (unsigned char) data[0];
-    output[1] = (unsigned char) data[1];
-    flash_initialize();
-    flash_erase(address, 2);
-    flash_write(address, data, 2);
-    flash_deinitialize();
-    ILI9341_printTextLength(output, w/2, h/2, COLOR_DCYAN, COLOR_WHITE, 3, 2);
-}
 /* USER CODE END 4 */
 
 /**
