@@ -39,12 +39,25 @@ void writeData(uint32_t address) {
     ILI9341_printTextLength(output, w/2, h/2, COLOR_DCYAN, COLOR_WHITE, 3, 2);
 }
 
+void testRecipeStorage() {
+    RecipeStruct recipe;
+    RecipeStruct recipeRead;
+    recipe.ingredient1 = 20000;
+    recipe.ingredient2 = 30000;
+    recipe.ingredient3 = 40000;
+    recipe.ingredient4 = 50000;
+    uint32_t address = RECIPE1;
+    writeRecipe(address, recipe);
+    recipeRead = readRecipe(address);
+}
+
 RecipeStruct readRecipe(uint32_t address) {
     RecipeStruct recipe;
-    recipe.ingredient1 = (unsigned short) address;
-    recipe.ingredient2 = (unsigned short) (address + 2);
-    recipe.ingredient3 = (unsigned short) (address + 4);
-    recipe.ingredient4 = (unsigned short) (address + 6);
+    recipe.ingredient1 = *(unsigned short*) address;
+    recipe.ingredient2 = *(unsigned short*) (address + 2);
+    recipe.ingredient3 = *(unsigned short*) (address + 4);
+    recipe.ingredient4 = *(unsigned short*) (address + 6);
+    return recipe;
 }
 
 void writeRecipe(uint32_t address, RecipeStruct recipe) {
