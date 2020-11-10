@@ -38,3 +38,23 @@ void writeData(uint32_t address) {
     flash_deinitialize();
     ILI9341_printTextLength(output, w/2, h/2, COLOR_DCYAN, COLOR_WHITE, 3, 2);
 }
+
+RecipeStruct readRecipe(uint32_t address) {
+    RecipeStruct recipe;
+    recipe.ingredient1 = (unsigned short) address;
+    recipe.ingredient2 = (unsigned short) (address + 2);
+    recipe.ingredient3 = (unsigned short) (address + 4);
+    recipe.ingredient4 = (unsigned short) (address + 6);
+}
+
+void writeRecipe(uint32_t address, RecipeStruct recipe) {
+    uint64_t data[4];
+    data[0] = recipe.ingredient1;
+    data[1] = recipe.ingredient2;
+    data[2] = recipe.ingredient3;
+    data[3] = recipe.ingredient4;
+    flash_initialize();
+    flash_erase(address, 2);
+    flash_write(address, data, 4);
+    flash_deinitialize();
+}

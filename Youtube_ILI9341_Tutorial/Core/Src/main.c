@@ -143,6 +143,7 @@ int main(void)
 //  }
 
   memoryTest();
+  testRecipeStorage();
 
   /* USER CODE END 3 */
 }
