@@ -23,8 +23,8 @@
 #define Motor1M2 GPIO_Pin_10 //PC10
 #define Motor1EN GPIO_Pin_11 //PC11
 
-#define Motor2Step GPIO_Pin_1 //PC2
-#define Motor2Dir GPIO_Pin_2 //PC1
+#define Motor2Step GPIO_Pin_1 //PC1
+#define Motor2Dir GPIO_Pin_2 //PC2
 #define Motor2M0 GPIO_Pin_3 //PC3
 #define Motor2M1 GPIO_Pin_6 //PF6
 #define Motor2M2 GPIO_Pin_0 //PC0
@@ -208,7 +208,7 @@ void motorRun(int motorNum)
     }
     else if(motorNum == 4){ //motor 4 has cheerios
         GPIO_ResetBits(MotorGPIOF, Motor4EN);
-        dispenseInterval = 31000;
+        dispenseInterval = 310000;
     }
     else if(motorNum == 5){ //motor 5 has granola
         GPIO_ResetBits(MotorGPIOF, Motor5EN);
@@ -315,8 +315,8 @@ int main(void)
     motorRun(4);
     micro_wait(1000000);*/
     motorRun(1);
-
-     /*uint16_t CurrentTimerVal1 = 0;
+    /*
+     uint16_t CurrentTimerVal1 = 0;
      uint16_t CurrentTimerVal2 = 0;
      uint16_t CurrentTimerVal3 = 0;
      uint16_t CurrentTimerVal4 = 0;
@@ -327,13 +327,13 @@ int main(void)
      int j;
      int k;
      //while(1)
-     for (k=0; k < 1; k++){
-
+     for (k=0; k < 1; k++)
+     {
          for (j=0; j <= 31000; j++) //j <= 55000 for peanuts, j <= 30000 for M&Ms for 1 flap dispensing
          {
          //Store current timer value in variable
               CurrentTimerVal1 = TIM_GetCounter(TIM2);
-              CurrentTimerVal2 = TIM_GetCounter(TIM3);
+              //CurrentTimerVal2 = TIM_GetCounter(TIM3);
               //CurrentTimerVal3 = TIM_GetCounter(TIM6);
               //CurrentTimerVal4 = TIM_GetCounter(TIM1);
               //CurrentTimerVal5 = TIM_GetCounter(TIM14);
@@ -345,7 +345,7 @@ int main(void)
                    GPIO_ResetBits(MotorGPIOC, Motor1Step);
               }
 
-              if(CurrentTimerVal2> ToggleValue){
+              /*if(CurrentTimerVal2> ToggleValue){
                    GPIO_SetBits(MotorGPIOC, Motor2Step);
               }
               else{
@@ -373,6 +373,7 @@ int main(void)
               //j++;
 
               //if (j == 150000){ //alternate motor direction, probs a better way to do this
+
               if(k == 0 || k == 3){
                   GPIO_ResetBits(MotorGPIOC, Motor1Dir);
               }
@@ -384,19 +385,19 @@ int main(void)
     //        	  GPIO_ResetBits(MotorGPIOB, Motor4Dir);
     //        	  GPIO_ResetBits(MotorGPIOA, Motor5Dir);
               //}
-              else if (j == 300000){
-                  GPIO_SetBits(MotorGPIOC, Motor1Dir);
+              //else if (j == 300000){
+                //  GPIO_SetBits(MotorGPIOC, Motor1Dir);
                   //GPIO_SetBits(MotorGPIOC, Motor2Dir);
     //        	  GPIO_SetBits(MotorGPIOB, Motor3Dir);
     //        	  GPIO_SetBits(MotorGPIOB, Motor4Dir);
     //        	  GPIO_SetBits(MotorGPIOA, Motor5Dir);
-                  j = 0;
-              }
+                  //j = 0;
+
          }
          if(k != 1){
              micro_wait(100000);
          }
-     }
-     GPIO_SetBits(MotorGPIOC, Motor1EN);
-     */
+    }
+    GPIO_SetBits(MotorGPIOC, Motor1EN);
+    */
 }
