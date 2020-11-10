@@ -1,4 +1,5 @@
 #include "flash.h"
+#include "stm32f0xx_hal.h"
 
 void flash_initialize()
 {
@@ -26,7 +27,7 @@ void flash_erase(uint32_t address, uint32_t pages)
 uint8_t flash_write(volatile uint32_t address, uint64_t * data, uint16_t size)
 {
    for (int i = 0; i < size; i++)
-     if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, ((address)+(i*4)), data[i]))
+     if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, ((address)+(i*2)), data[i]))
         return 1;
    return 0;
 }
@@ -36,7 +37,7 @@ unsigned char * flash_read(volatile uint32_t address, uint16_t size) {
     uint32_t addr = address;
     for(int i = 0; i < size; i++) {
         output[i] = * (unsigned char *)addr;
-        addr = addr + i * 4;
+        addr = addr + i * 2;
     }
     return output;
 }
