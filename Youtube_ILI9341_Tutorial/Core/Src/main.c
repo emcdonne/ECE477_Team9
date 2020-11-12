@@ -110,34 +110,149 @@ int main(void)
   GPIOC-> MODER |= (1<<16);
   GPIOC-> ODR |= (1<<8);
 
-  int xnum;
-  int ynum;
-  char xraw[5];
-  char yraw[5];
   unsigned int h = ILI9341_HEIGHT;
   unsigned int w = ILI9341_WIDTH;
 
-  TS_TOUCH_DATA_Def myTS_Handle;
+  char state[32] = "start";
+  ILI9341_Fill(COLOR_WHITE);
 
   while (1)
   {
     /* USER CODE END WHILE */
-	  TouchTest();
-	  if(TSC2046_getRaw_Z() > 50) {
-		  myTS_Handle = TSC2046_GetTouchData();
-		  xnum = convertX(myTS_Handle.rawX);
-		  ynum = convertY(myTS_Handle.rawY);
-		  itoa(xnum, xraw, 10);
-		  itoa(ynum, yraw, 10);
-		  if(xnum < 40 && ynum < 40) {
-			  ILI9341_Fill_Rect(0, 0, h , w, COLOR_WHITE);
-			  ILI9341_Fill_Rect(0, 0, 40, 40, COLOR_RED);
+	  /**
+	   * This code is going to implement a state machine using if-else statements [can't switch/case on a string]
+	   * Within this loop will be if/elses that will constantly draw to the screen,
+	   * wait for input, change state, and erase the changes made.
+	   *
+	   * To erase simple changes, simply run all commands but with all colors set to WHITE.
+	   * This will perfectly return every single pixel to the background color.
+	   * However, some screens are complex enough that re-filling with white is faster.
+	   *
+	   * Do that in those cases. Usually takes about 2.25 seconds to full clear
+	   *
+	   * White will be assumed as the default background color.
+	   */
+	  if(strcmp(state, "start") == 0) {
+		  // DEFAULT START SCREEN
+		  ILI9341_printText("Welcome to the", 35, 10, COLOR_BLACK, COLOR_WHITE, 3);
+		  ILI9341_printText("Boiler Mixer!", 50, 40, COLOR_BLACK, COLOR_WHITE, 3);
+		  ILI9341_printText("Would you like to create", 20, 75, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_printText("a new recipe or load an", 20, 95, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_printText("existing one?", 20, 115, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_drawRect(4, w/2+15, h/2-5, w-10, COLOR_BLUE);
+		  ILI9341_drawRect(h/2+5, w/2+15, h-4, w-10, COLOR_DGREEN);
+		  ILI9341_printText("LOAD", 43, w/2+35, COLOR_BLUE, COLOR_WHITE, 3);
+		  ILI9341_printText("RECIPE", 25, w/2+65, COLOR_BLUE, COLOR_WHITE, 3);
+		  ILI9341_printText("NEW", h/2+52, w/2+35, COLOR_DGREEN, COLOR_WHITE, 3);
+		  ILI9341_printText("RECIPE", h/2+26, w/2+65, COLOR_DGREEN, COLOR_WHITE, 3);
+
+
+		  while(1) {
+			  if(TSC2046_getRaw_Z() > 50) {
+				  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+5, w/2+15, h-4, w-10) ) {
+					  strcpy(state,"ipeanuts");
+					  break;
+				  }
+			  }
 		  }
-		  else {
-			  ILI9341_fillCircle(convertX(myTS_Handle.rawX), convertY(myTS_Handle.rawY), 2, COLOR_BLACK);
-		  }
-		  // draw circle
+
+		  ILI9341_Fill(COLOR_WHITE);
+
+
 	  }
+	  else if (strcmp(state, "ipeanuts") == 0) {
+		  // INGREDIENT SCREEN: PEANUTS
+		  IngredientSelect("PEANUTS", 3);
+
+		  while(1) {
+			  if(TSC2046_getRaw_Z() > 50) {
+				  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+5, w/2+15, h-4, w-10) ) {
+					  strcpy(state,"im&ms");
+					  break;
+				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+50, 10, h-4, 70) ) {
+					  strcpy(state,"start");
+					  break;
+				  }
+			  }
+
+		  }
+
+		  IngredientErase("PEANUTS", 3);
+
+	  }
+	  else if (strcmp(state, "im&ms") == 0) {
+		  // INGREDIENT SCREEN: M&MS
+		  IngredientSelect("M&MS", 3);
+
+		  while (1) {
+			  if(TSC2046_getRaw_Z() > 50) {
+				  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+5, w/2+15, h-4, w-10) ) {
+					  strcpy(state,"icheerios");
+					  break;
+				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+50, 10, h-4, 70) ) {
+					  strcpy(state,"ipeanuts");
+					  break;
+				  }
+			  }
+
+		  }
+
+		  IngredientErase("M&MS", 3);
+	  }
+	  else if (strcmp(state, "icheerios") == 0) {
+		  // INGREDIENT SCREEN: CHEERIOS
+		  IngredientSelect("CHEERIOS", 3);
+
+		  while (1) {
+			  if(TSC2046_getRaw_Z() > 50) {
+				  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+5, w/2+15, h-4, w-10) ) {
+					  strcpy(state,"igranola");
+					  break;
+				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+50, 10, h-4, 70) ) {
+					  strcpy(state,"im&ms");
+					  break;
+				  }
+			  }
+		  }
+
+		  IngredientErase("CHEERIOS", 3);
+	  }
+	  else if (strcmp(state, "igranola") == 0) {
+		  // INGREDIENT SCREEN: GRANOLA BITS
+		  IngredientSelect("GRANOLA", 3);
+
+		  while (1) {
+			  if(TSC2046_getRaw_Z() > 50) {
+			  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
+			  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+5, w/2+15, h-4, w-10) ) {
+				  strcpy(state,"UNIMPLEMENTED");
+				  break;
+			  }
+			  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+50, 10, h-4, 70) ) {
+				  strcpy(state,"icheerios");
+				  break;
+			  }
+		  }
+
+		  }
+
+		  IngredientErase("GRANOLA", 3);
+	  }
+	  else {
+
+		  ILI9341_Fill(COLOR_WHITE);
+	  }
+
+
+
+
 	/*
 	for (i=0; i< 1000000; i++);
 		GPIOC-> ODR |= (1<<8);
@@ -313,6 +428,58 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/**
+ * Draw the ingredient selections screen
+ * Try to keep ingredient down to 10 characters
+ * Though you can pass in its size to help
+ * [by default the size will be 3]
+ *
+ * Only takes about 1.5 seconds to draw
+ */
+void IngredientSelect(char ingredient[], int size) {
+	ILI9341_printText("Select Amount:", 20, 10, COLOR_BLACK, COLOR_WHITE, 2);
+	ILI9341_printText(ingredient, 20, 36, COLOR_BLACK, COLOR_WHITE, size);
+	ILI9341_drawRect(h/2+50, 10, h-4, 70, COLOR_RED);
+	ILI9341_printText("BACK", h/2+70, 30, COLOR_RED, COLOR_WHITE, 3);
+	ILI9341_printText("0%          25          50          75          100", 9, w/2-35, COLOR_BLACK, COLOR_WHITE, 1);
+	ILI9341_drawRect(10, w/2-25, h-10, w/2-5, COLOR_BLACK);
+	ILI9341_drawRect(33, w/2+15, 128, w-10, COLOR_BLUE);
+	ILI9341_drawRect(h/2+5, w/2+15, h-4, w-10, COLOR_DGREEN);
+	ILI9341_printText("CONTINUE", h/2+10, w/2+50, COLOR_DGREEN, COLOR_WHITE, 3);
+}
+
+/**
+ * Pass in the same arguments you did to Ingredient select to wipe this out
+ * Just as fast as Ingredient Select: 1.5 seconds!
+ */
+void IngredientErase(char ingredient[], int size) {
+	ILI9341_printText("Select Amount:", 20, 10, COLOR_WHITE, COLOR_WHITE, 2);
+	ILI9341_printText(ingredient, 20, 36, COLOR_WHITE, COLOR_WHITE, size);
+	ILI9341_drawRect(h/2+50, 10, h-4, 70, COLOR_WHITE);
+	ILI9341_printText("BACK", h/2+70, 30, COLOR_WHITE, COLOR_WHITE, 3);
+	ILI9341_printText("0%          25          50          75          100", 9, w/2-35, COLOR_WHITE, COLOR_WHITE, 1);
+	ILI9341_drawRect(10, w/2-25, h-10, w/2-5, COLOR_WHITE);
+	ILI9341_drawRect(33, w/2+15, 128, w-10, COLOR_WHITE);
+	ILI9341_drawRect(h/2+5, w/2+15, h-4, w-10, COLOR_WHITE);
+	ILI9341_printText("CONTINUE", h/2+10, w/2+50, COLOR_WHITE, COLOR_WHITE, 3);
+}
+/**
+ * Detect a touch within a rectangle of bounds.
+ * The detection is NOT pixel-perfect; the convert() functions must be fixed to address this
+ * However, it is close enough that this is not particularly an issue
+ *
+ * Assumes x0, y0 is the top left of the desired rectangle and x1, y1 is the bottom right
+ *
+ * Could not pass the touch handlers directly in for some reason
+ */
+bool DetectTouch(int rawX, int rawY, int x0, int y0, int x1, int y1){
+	int xnum = convertX(rawX);
+	int ynum = convertY(rawY);
+
+	return(x0 <= xnum && y0 <= ynum && x1 >= xnum && y1 >= ynum);
+}
+
 
 void ColorTest() {
 	// Implement Software test 2.1

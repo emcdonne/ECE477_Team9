@@ -474,7 +474,26 @@ void ILI9341_Fill_Rect(unsigned int x0,unsigned int y0, unsigned int x1,unsigned
 				ILI9341_SendData(color&0xff);
 	}
 }
-
+// MY function: draw the outline of a rectangle
+// Want it to be thicker?
+// Just draw more lines! Should be simple simple
+void ILI9341_drawRect(unsigned int x0,unsigned int y0, unsigned int x1,unsigned int y1, uint16_t color) {
+	unsigned int temp;
+	if(x0 > x1) {
+		temp = x0;
+		x0 = x1;
+		x1 = temp;
+	}
+	if(y0 > y1) {
+		temp = y0;
+		y0 = y1;
+		y1 = temp;
+	}
+	ILI9341_drawFastHLine(x0, y0, x1-x0, color);
+	ILI9341_drawFastVLine(x0, y0, y1-y0, color);
+	ILI9341_drawFastVLine(x1, y0, y1-y0, color);
+	ILI9341_drawFastHLine(x0, y1, x1-x0+1, color); // always seemed to miss one
+}
 //8. Circle drawing functions
 void ILI9341_drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color)
 {
@@ -628,6 +647,7 @@ void ILI9341_drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color)
 {
 	ILI9341_drawLine(x, y, x, y+h-1, color);
 }
+
 //10. Triangle drawing
 void ILI9341_drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color)
 {
@@ -755,7 +775,7 @@ void ILI9341_printText(char text[], int16_t x, int16_t y, uint16_t color, uint16
 {
 	int16_t offset;
 	offset = size*6;
-	for(uint16_t i=0; i<40 && text[i]!=NULL; i++)
+	for(uint16_t i=0; i<60 && text[i]!=NULL; i++)
 	{
 		ILI9341_drawChar(x+(offset*i), y, text[i],color,bg,size);
 	}

@@ -121,6 +121,7 @@ void ILI9341_DrawPixel(uint16_t x, uint16_t y, uint16_t color); //Draw single pi
 void ILI9341_Fill(uint16_t color); //Fill entire ILI9341 with color
 //7. Rectangle drawing functions
 void ILI9341_Fill_Rect(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1, uint16_t color);
+void ILI9341_drawRect(unsigned int x0,unsigned int y0, unsigned int x1,unsigned int y1, uint16_t color);
 //8. Circle drawing functions
 void ILI9341_drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
 static void drawCircleHelper( int16_t x0, int16_t y0, int16_t r, uint8_t cornername, uint16_t color);

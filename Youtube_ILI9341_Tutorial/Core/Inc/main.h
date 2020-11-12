@@ -28,11 +28,14 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include <stdbool.h>	// I think it looks clean, okay!
 #include "stm32f0xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+void IngredientSelect(char ingredient[], int size);
+void IngredientErase(char ingredient[], int size);
+bool DetectTouch(int rawx, int rawy, int x0, int y0, int x1, int y1);
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
