@@ -100,6 +100,7 @@ void motorSetup(void){
          GPIO_SetBits(MotorGPIOB, Motor2Dir);
          GPIO_SetBits(MotorGPIOC, Motor3Dir);
          GPIO_SetBits(MotorGPIOA, Motor4Dir);
+         //GPIO_ResetBits(MotorGPIOA, Motor4Dir);
          GPIO_SetBits(MotorGPIOB, Motor5Dir);
 
 
@@ -117,7 +118,7 @@ void motorSetup(void){
          T2.TIM_ClockDivision = TIM_CKD_DIV1;
          T2.TIM_CounterMode = TIM_CounterMode_Up;
          T2.TIM_Period = 0xFFFF;
-         T2.TIM_Prescaler = 2;
+         T2.TIM_Prescaler = 1;
          T2.TIM_RepetitionCounter = 0;
          TIM_TimeBaseInit(TIM3, &T2);
          TIM_Cmd(TIM3, ENABLE);
@@ -154,6 +155,16 @@ void motorSetup(void){
          return;
 }
 
+void mixingIdle(int wait){
+    int i;
+    for(i = 0; i < wait; i++){
+        GPIO_SetBits(MotorGPIOC, Motor3Step);
+        micro_wait(1000);
+        GPIO_ResetBits(MotorGPIOC, Motor3Step);
+        micro_wait(1000);
+    }
+}
+
 void motorRun(int motorNum)
 {
     uint16_t currentTimerVal = 0;
@@ -162,19 +173,19 @@ void motorRun(int motorNum)
     //enable the motor driver for said motor
     if(motorNum == 1){ //motor 1 has M&Ms
         GPIO_ResetBits(MotorGPIOC, Motor1EN);
-        dispenseInterval = 30000;
+        dispenseInterval = 30000; //30000
     }
     else if(motorNum == 2){ //motor 2 has peanuts
         GPIO_ResetBits(MotorGPIOB, Motor2EN);
-        dispenseInterval = 31000;
+        dispenseInterval = 40000; //31000
     }
     else if(motorNum == 4){ //motor 4 has cheerios
         GPIO_ResetBits(MotorGPIOA, Motor4EN);
-        dispenseInterval = 90000;
+        dispenseInterval = 40000; //31000
     }
     else if(motorNum == 5){ //motor 5 has granola
         GPIO_ResetBits(MotorGPIOB, Motor5EN);
-        dispenseInterval = 31000;
+        dispenseInterval = 30000; //31000
     }
     else{
         return;
@@ -190,9 +201,11 @@ void motorRun(int motorNum)
                 currentTimerVal = TIM_GetCounter(TIM3);
                 if(currentTimerVal > ToggleValue){
                     GPIO_SetBits(MotorGPIOC, Motor1Step);
+                    GPIO_SetBits(MotorGPIOC, Motor3Step);
                 }
                 else{
                     GPIO_ResetBits(MotorGPIOC, Motor1Step);
+                    GPIO_ResetBits(MotorGPIOC, Motor3Step);
                 }
                 if(k == 0 || k == 3){
                     GPIO_ResetBits(MotorGPIOC, Motor1Dir);
@@ -205,9 +218,11 @@ void motorRun(int motorNum)
                 currentTimerVal = TIM_GetCounter(TIM3);
                 if(currentTimerVal > ToggleValue){
                     GPIO_SetBits(MotorGPIOB, Motor2Step);
+                    GPIO_SetBits(MotorGPIOC, Motor3Step);
                 }
                 else{
                     GPIO_ResetBits(MotorGPIOB, Motor2Step);
+                    GPIO_ResetBits(MotorGPIOC, Motor3Step);
                 }
                 if(k == 0 || k == 3){
                     GPIO_ResetBits(MotorGPIOB, Motor2Dir);
@@ -220,9 +235,11 @@ void motorRun(int motorNum)
                 currentTimerVal = TIM_GetCounter(TIM3);
                 if(currentTimerVal > ToggleValue){
                     GPIO_SetBits(MotorGPIOA, Motor4Step);
+                    GPIO_SetBits(MotorGPIOC, Motor3Step);
                 }
                 else{
                     GPIO_ResetBits(MotorGPIOA, Motor4Step);
+                    GPIO_ResetBits(MotorGPIOC, Motor3Step);
                 }
                 if(k == 0 || k == 3){
                     GPIO_ResetBits(MotorGPIOA, Motor4Dir);
@@ -235,9 +252,11 @@ void motorRun(int motorNum)
                 currentTimerVal = TIM_GetCounter(TIM3);
                 if(currentTimerVal > ToggleValue){
                     GPIO_SetBits(MotorGPIOB, Motor5Step);
+                    GPIO_SetBits(MotorGPIOC, Motor3Step);
                 }
                 else{
                     GPIO_ResetBits(MotorGPIOB, Motor5Step);
+                    GPIO_ResetBits(MotorGPIOC, Motor3Step);
                 }
                 if(k == 0 || k == 3){
                     GPIO_ResetBits(MotorGPIOB, Motor5Dir);
@@ -253,6 +272,7 @@ void motorRun(int motorNum)
     }
     if(motorNum == 1){ //motor 1 has M&Ms
         GPIO_SetBits(MotorGPIOC, Motor1EN);
+        //GPIO_SetBits(MotorGPIOC, Motor3EN);
     }
     else if(motorNum == 2){ //motor 2 has peanuts
         GPIO_SetBits(MotorGPIOB, Motor2EN);
@@ -270,13 +290,54 @@ int main(void)
 {
     motorSetup();
 
+    //motorRun(1);
+    //micro_wait(100000);
+    //motorRun(2);
+    //micro_wait(100000);
+    /*while(1){
+            motorRun();
+            micro_wait(100000);
+    }*/
+
+
+    /*
+    GPIO_ResetBits(MotorGPIOC, Motor3EN);
+    uint16_t CurrentTimerVal3 = 0;
+    while(1){
+        CurrentTimerVal3 = TIM_GetCounter(TIM6);
+        if(CurrentTimerVal3> ToggleValue){
+            GPIO_SetBits(MotorGPIOC, Motor3Step);
+        }
+        else{
+            GPIO_ResetBits(MotorGPIOC, Motor3Step);
+        }
+    }
+
+    */
+
+    GPIO_ResetBits(MotorGPIOC, Motor3EN);
+    //GPIO_ResetBits(MotorGPIOC, Motor3Dir);
+    mixingIdle(1200);
     motorRun(1);
-    micro_wait(100000);
+    mixingIdle(600);
+    motorRun(1);
+    mixingIdle(600);
+    motorRun(1);
+    mixingIdle(600);
+    motorRun(1);
+    mixingIdle(600);
+    motorRun(1);
+        mixingIdle(600);
+
+    /*motorRun(1);
+    mixingIdle(600);
     motorRun(2);
-    micro_wait(100000);
-    motorRun(4);
-    micro_wait(100000);
-    motorRun(5);
+    mixingIdle(600);
+    motorRun(1);
+    mixingIdle(600);
+    motorRun(2);
+    mixingIdle(600);*/
+    GPIO_SetBits(MotorGPIOC, Motor3EN);
 
     /*
      uint16_t CurrentTimerVal1 = 0;
