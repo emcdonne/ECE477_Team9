@@ -119,7 +119,7 @@ int main(void)
   unsigned int h = ILI9341_HEIGHT;
   unsigned int w = ILI9341_WIDTH;
 
-  char state[32] = "progressBar";
+  char state[32] = "start";
   ILI9341_Fill(COLOR_WHITE);
 
   while (1)
@@ -278,7 +278,17 @@ int main(void)
 		  ILI9341_printText("CONTINUE", h/2+10, w/2+50, COLOR_DGREEN, COLOR_WHITE, 3);
 
 		  while(1) {
-
+			  if(TSC2046_getRaw_Z() > 50) {
+				  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+5, w/2+15, h-4, w-10) ) {
+					  strcpy(state,"progressBar");
+					  break;
+			  	  }
+			  	  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+50, 10, h-4, 70) ) {
+			  		  strcpy(state,"igranola");
+			  		  break;
+				  }
+			  }
 		  }
 
 		  ILI9341_printText("Would you like ", 20, 10, COLOR_WHITE, COLOR_WHITE, 2);
