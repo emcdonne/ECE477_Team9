@@ -33,9 +33,10 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-void IngredientSelect(char ingredient[], int size);
-void IngredientErase(char ingredient[], int size);
+void IngredientSelect(char ingredient[], int size, int ingNum);
+void IngredientErase(char ingredient[], int size, int ingNum);
 bool DetectTouch(int rawx, int rawy, int x0, int y0, int x1, int y1);
+int updateSlider(int rawTouch, int prevIng);
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

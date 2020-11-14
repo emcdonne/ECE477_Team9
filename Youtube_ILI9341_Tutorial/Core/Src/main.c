@@ -34,8 +34,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+// Declaring helpers here
 int convertX(int);
 int convertY(int);
+int sliderSplit(int x);
 
 unsigned int h = ILI9341_HEIGHT;
 unsigned int w = ILI9341_WIDTH;
@@ -49,6 +51,10 @@ unsigned int w = ILI9341_WIDTH;
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
+
+// Global ingredient counts - on a 1 to 100 scale currently
+int ingredient[4] = {0, 0, 0, 0};
+char ingBuf[5] = {' ', ' ', ' ', ' ', ' '};
 
 /* USER CODE BEGIN PV */
 
@@ -108,12 +114,12 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   GPIOC-> MODER |= (1<<16);
-  GPIOC-> ODR |= (1<<8);
+  GPIOC-> ODR   |= (1<<8);
 
   unsigned int h = ILI9341_HEIGHT;
   unsigned int w = ILI9341_WIDTH;
 
-  char state[32] = "start";
+  char state[32] = "progressBar";
   ILI9341_Fill(COLOR_WHITE);
 
   while (1)
@@ -163,7 +169,7 @@ int main(void)
 	  }
 	  else if (strcmp(state, "ipeanuts") == 0) {
 		  // INGREDIENT SCREEN: PEANUTS
-		  IngredientSelect("PEANUTS", 3);
+		  IngredientSelect("PEANUTS", 3, ingredient[0]);
 
 		  while(1) {
 			  if(TSC2046_getRaw_Z() > 50) {
@@ -176,16 +182,19 @@ int main(void)
 					  strcpy(state,"start");
 					  break;
 				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 10, w/2-25, h-10, w/2-5)){
+					  ingredient[0] = updateSlider(myTouch.rawX, ingredient[0]);
+				  }
 			  }
 
 		  }
 
-		  IngredientErase("PEANUTS", 3);
+		  IngredientErase("PEANUTS", 3, ingredient[0]);
 
 	  }
 	  else if (strcmp(state, "im&ms") == 0) {
 		  // INGREDIENT SCREEN: M&MS
-		  IngredientSelect("M&MS", 3);
+		  IngredientSelect("M&MS", 3, ingredient[1]);
 
 		  while (1) {
 			  if(TSC2046_getRaw_Z() > 50) {
@@ -198,15 +207,18 @@ int main(void)
 					  strcpy(state,"ipeanuts");
 					  break;
 				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 10, w/2-25, h-10, w/2-5)){
+					  ingredient[1] = updateSlider(myTouch.rawX, ingredient[1]);
+				  }
 			  }
 
 		  }
 
-		  IngredientErase("M&MS", 3);
+		  IngredientErase("M&MS", 3, ingredient[1]);
 	  }
 	  else if (strcmp(state, "icheerios") == 0) {
 		  // INGREDIENT SCREEN: CHEERIOS
-		  IngredientSelect("CHEERIOS", 3);
+		  IngredientSelect("CHEERIOS", 3, ingredient[2]);
 
 		  while (1) {
 			  if(TSC2046_getRaw_Z() > 50) {
@@ -219,39 +231,83 @@ int main(void)
 					  strcpy(state,"im&ms");
 					  break;
 				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 10, w/2-25, h-10, w/2-5)){
+					  ingredient[2] = updateSlider(myTouch.rawX, ingredient[2]);
+				  }
 			  }
 		  }
 
-		  IngredientErase("CHEERIOS", 3);
+		  IngredientErase("CHEERIOS", 3, ingredient[2]);
 	  }
 	  else if (strcmp(state, "igranola") == 0) {
 		  // INGREDIENT SCREEN: GRANOLA BITS
-		  IngredientSelect("GRANOLA", 3);
+		  IngredientSelect("GRANOLA", 3, ingredient[3]);
 
 		  while (1) {
 			  if(TSC2046_getRaw_Z() > 50) {
-			  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
-			  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+5, w/2+15, h-4, w-10) ) {
-				  strcpy(state,"UNIMPLEMENTED");
-				  break;
-			  }
-			  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+50, 10, h-4, 70) ) {
-				  strcpy(state,"icheerios");
-				  break;
+				  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+5, w/2+15, h-4, w-10) ) {
+					  strcpy(state,"chooseToSave");
+					  break;
+				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+50, 10, h-4, 70) ) {
+					  strcpy(state,"icheerios");
+					  break;
+				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 10, w/2-25, h-10, w/2-5)){
+					  ingredient[3] = updateSlider(myTouch.rawX, ingredient[3]);
+				  }
 			  }
 		  }
 
+		  IngredientErase("GRANOLA", 3, ingredient[3]);
+	  }
+	  else if (strcmp(state, "chooseToSave") == 0) {
+		  // CHOOSE TO SAVE RECIPE OR CONTINUE
+		  ILI9341_printText("Would you like ", 20, 10, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_printText("to save this ", 20, 30, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_printText("recipe before", 20, 50, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_printText("making it?", 20, 70, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_drawRect(h/2+50, 10, h-4, 70, COLOR_RED);
+		  ILI9341_printText("BACK", h/2+70, 30, COLOR_RED, COLOR_WHITE, 3);
+		  ILI9341_printText("Name: Recipe X", 20, 100, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_drawRect(4, w/2+15, h/2-5, w-10, COLOR_BLUE);
+		  ILI9341_printText("SAVE", 43, w/2+35, COLOR_BLUE, COLOR_WHITE, 3);
+		  ILI9341_printText("RECIPE", 25, w/2+65, COLOR_BLUE, COLOR_WHITE, 3);
+		  ILI9341_drawRect(h/2+5, w/2+15, h-4, w-10, COLOR_DGREEN);
+		  ILI9341_printText("CONTINUE", h/2+10, w/2+50, COLOR_DGREEN, COLOR_WHITE, 3);
+
+		  while(1) {
+
 		  }
 
-		  IngredientErase("GRANOLA", 3);
+		  ILI9341_printText("Would you like ", 20, 10, COLOR_WHITE, COLOR_WHITE, 2);
+		  ILI9341_printText("to save this ", 20, 30, COLOR_WHITE, COLOR_WHITE, 2);
+		  ILI9341_printText("recipe before", 20, 50, COLOR_WHITE, COLOR_WHITE, 2);
+		  ILI9341_printText("making it?", 20, 70, COLOR_WHITE, COLOR_WHITE, 2);
+		  ILI9341_drawRect(h/2+50, 10, h-4, 70, COLOR_WHITE);
+		  ILI9341_printText("BACK", h/2+70, 30, COLOR_WHITE, COLOR_WHITE, 3);
+		  ILI9341_printText("Name: Recipe X", 20, 100, COLOR_WHITE, COLOR_WHITE, 2);
+		  ILI9341_drawRect(4, w/2+15, h/2-5, w-10, COLOR_WHITE);
+		  ILI9341_printText("SAVE", 43, w/2+35, COLOR_WHITE, COLOR_WHITE, 3);
+		  ILI9341_printText("RECIPE", 25, w/2+65, COLOR_WHITE, COLOR_WHITE, 3);
+		  ILI9341_drawRect(h/2+5, w/2+15, h-4, w-10, COLOR_WHITE);
+		  ILI9341_printText("CONTINUE", h/2+10, w/2+50, COLOR_WHITE, COLOR_WHITE, 3);
+	  }
+	  else if (strcmp(state, "progressBar") == 0) {
+		  // SHOW TRAIL MIX COMPLETION
+		  ILI9341_printText("Welcome to the", 35, 10, COLOR_BLACK, COLOR_WHITE, 3);
+		  ILI9341_printText("Boiler Mixer!", 50, 40, COLOR_BLACK, COLOR_WHITE, 3);
+
+		  while (1) {
+
+		  }
+
 	  }
 	  else {
 
 		  ILI9341_Fill(COLOR_WHITE);
 	  }
-
-
-
 
 	/*
 	for (i=0; i< 1000000; i++);
@@ -435,35 +491,80 @@ static void MX_GPIO_Init(void)
  * Though you can pass in its size to help
  * [by default the size will be 3]
  *
+ * ingNum is the current % of this ingredient (default 0)
+ *
  * Only takes about 1.5 seconds to draw
  */
-void IngredientSelect(char ingredient[], int size) {
+void IngredientSelect(char ingName[], int size, int ingNum) {
 	ILI9341_printText("Select Amount:", 20, 10, COLOR_BLACK, COLOR_WHITE, 2);
-	ILI9341_printText(ingredient, 20, 36, COLOR_BLACK, COLOR_WHITE, size);
+	ILI9341_printText(ingName, 20, 36, COLOR_BLACK, COLOR_WHITE, size);
 	ILI9341_drawRect(h/2+50, 10, h-4, 70, COLOR_RED);
 	ILI9341_printText("BACK", h/2+70, 30, COLOR_RED, COLOR_WHITE, 3);
 	ILI9341_printText("0%          25          50          75          100", 9, w/2-35, COLOR_BLACK, COLOR_WHITE, 1);
 	ILI9341_drawRect(10, w/2-25, h-10, w/2-5, COLOR_BLACK);
+	// Dark out the progress bar to avoid going past 100
+	int ingSum = ingredient[0] + ingredient[1] + ingredient[2] + ingredient[3] - ingNum;
+	ILI9341_Fill_Rect(h-ingSum*3-10, w/2-25, h-10, w/2-5, COLOR_BLACK);
 	ILI9341_drawRect(33, w/2+15, 128, w-10, COLOR_BLUE);
+	sprintf(ingBuf, "%3d%%", ingNum);
+	ILI9341_printText(ingBuf, 35, w/2+50, COLOR_BLACK, COLOR_WHITE, 3);
 	ILI9341_drawRect(h/2+5, w/2+15, h-4, w-10, COLOR_DGREEN);
 	ILI9341_printText("CONTINUE", h/2+10, w/2+50, COLOR_DGREEN, COLOR_WHITE, 3);
+
 }
 
 /**
  * Pass in the same arguments you did to Ingredient select to wipe this out
  * Just as fast as Ingredient Select: 1.5 seconds!
  */
-void IngredientErase(char ingredient[], int size) {
+void IngredientErase(char ingName[], int size, int ingNum) {
 	ILI9341_printText("Select Amount:", 20, 10, COLOR_WHITE, COLOR_WHITE, 2);
-	ILI9341_printText(ingredient, 20, 36, COLOR_WHITE, COLOR_WHITE, size);
+	ILI9341_printText(ingName, 20, 36, COLOR_WHITE, COLOR_WHITE, size);
 	ILI9341_drawRect(h/2+50, 10, h-4, 70, COLOR_WHITE);
 	ILI9341_printText("BACK", h/2+70, 30, COLOR_WHITE, COLOR_WHITE, 3);
 	ILI9341_printText("0%          25          50          75          100", 9, w/2-35, COLOR_WHITE, COLOR_WHITE, 1);
-	ILI9341_drawRect(10, w/2-25, h-10, w/2-5, COLOR_WHITE);
+	ILI9341_Fill_Rect(10, w/2-25, h-10, w/2-5, COLOR_WHITE);
 	ILI9341_drawRect(33, w/2+15, 128, w-10, COLOR_WHITE);
+	sprintf(ingBuf, "%3d%%", ingNum);
+	ILI9341_printText(ingBuf, 35, w/2+50, COLOR_WHITE, COLOR_WHITE, 3);
 	ILI9341_drawRect(h/2+5, w/2+15, h-4, w-10, COLOR_WHITE);
 	ILI9341_printText("CONTINUE", h/2+10, w/2+50, COLOR_WHITE, COLOR_WHITE, 3);
 }
+
+/**
+ * Return a 0 - 100 percentage based on where on the IngredientSelect
+ * slider bar the touch was detected from.
+ *
+ * Remember that touch is NOT perfectly accurate so maybe split by 5%
+ */
+int sliderSplit(int x) {
+	// Input should be between 10 and h-10 (310)
+	// Rudimentary for now:
+	x = x - 5; 	// between 0 and 300 [ adjusting to the left a bit ]
+	x = x / 15;		// between 0 and 20
+	x = x * 5;		// between 0 and 100 as a multiple of 5 (b/c int)
+	return x;
+}
+
+/**
+ * Slider - code: read the x coordinate on the slider,
+ * 	then draw the percentage in the lower left hand corner.
+ *
+ * Returns the ingredient
+ */
+int updateSlider(int rawTouch, int prevIng) {
+	ILI9341_printText(ingBuf, 35, w/2+50, COLOR_WHITE, COLOR_WHITE, 3);	// erase old num
+	int newIng = sliderSplit(convertX(rawTouch));
+	int prevIngSum = ingredient[0] + ingredient[1] + ingredient[2] + ingredient[3];
+	if(prevIngSum - prevIng + newIng >= 100) {
+		newIng = 100 - (prevIngSum - prevIng);
+	}
+	sprintf(ingBuf, "%3d%%", newIng);
+	ILI9341_printText(ingBuf, 35, w/2+50, COLOR_BLACK, COLOR_WHITE, 3);
+	HAL_Delay(100);
+	return newIng;
+}
+
 /**
  * Detect a touch within a rectangle of bounds.
  * The detection is NOT pixel-perfect; the convert() functions must be fixed to address this
