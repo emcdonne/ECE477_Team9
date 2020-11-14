@@ -37,6 +37,7 @@ void IngredientSelect(char ingredient[], int size, int ingNum);
 void IngredientErase(char ingredient[], int size, int ingNum);
 bool DetectTouch(int rawx, int rawy, int x0, int y0, int x1, int y1);
 int updateSlider(int rawTouch, int prevIng);
+void fillProgressBar(int fillTime);
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

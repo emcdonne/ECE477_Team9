@@ -296,12 +296,43 @@ int main(void)
 	  }
 	  else if (strcmp(state, "progressBar") == 0) {
 		  // SHOW TRAIL MIX COMPLETION
-		  ILI9341_printText("Welcome to the", 35, 10, COLOR_BLACK, COLOR_WHITE, 3);
-		  ILI9341_printText("Boiler Mixer!", 50, 40, COLOR_BLACK, COLOR_WHITE, 3);
+		  ILI9341_printText("Creating your", 45, 10, COLOR_BLACK, COLOR_WHITE, 3);
+		  ILI9341_printText("Trail Mix!", 75, 45, COLOR_BLACK, COLOR_WHITE, 3);
+		  ILI9341_printText("Please wait until", 10, 80, COLOR_BLACK, COLOR_WHITE, 3);
+		  ILI9341_printText("the bar is full.", 10, 115, COLOR_BLACK, COLOR_WHITE, 3);
+		  ILI9341_drawRect(10, w/2+30, h-10, w-40, COLOR_BLACK);
+
+		  fillProgressBar(5000);
+
+		  ILI9341_printText("Creating your", 45, 10, COLOR_WHITE, COLOR_WHITE, 3);
+		  ILI9341_printText("Trail Mix!", 75, 45, COLOR_WHITE, COLOR_WHITE, 3);
+		  ILI9341_printText("Please wait until", 10, 80, COLOR_WHITE, COLOR_WHITE, 3);
+		  ILI9341_printText("the bar is full.", 10, 115, COLOR_WHITE, COLOR_WHITE, 3);
+
+		  ILI9341_printText("Trail Mix", 80, 10, COLOR_BLACK, COLOR_WHITE, 3);
+		  ILI9341_printText("Complete!", 82, 45, COLOR_BLACK, COLOR_WHITE, 3);
+		  ILI9341_printText("Please take your trail", 20, 75, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_printText("mix. Thank you for ", 20, 95, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_printText("using Boiler Mixer!", 20, 115, COLOR_BLACK, COLOR_WHITE, 2);
 
 		  while (1) {
-
+			  // Might want to consider using a timer so a user touch can also skip to the first state again
+			  HAL_Delay(10000);
+			  strcpy(state, "start");
+			  break;
 		  }
+
+		  ILI9341_Fill_Rect(10, w/2+30, h-10, w-40, COLOR_WHITE);
+		  ILI9341_printText("Trail Mix", 80, 10, COLOR_WHITE, COLOR_WHITE, 3);
+		  ILI9341_printText("Complete!", 82, 45, COLOR_WHITE, COLOR_WHITE, 3);
+		  ILI9341_printText("Please take your trail", 20, 75, COLOR_WHITE, COLOR_WHITE, 2);
+		  ILI9341_printText("mix. Thank you for ", 20, 95, COLOR_WHITE, COLOR_WHITE, 2);
+		  ILI9341_printText("using Boiler Mixer!", 20, 115, COLOR_WHITE, COLOR_WHITE, 2);
+
+		  ingredient[0] = 0;
+		  ingredient[1] = 0;
+		  ingredient[2] = 0;
+		  ingredient[3] = 0;
 
 	  }
 	  else {
@@ -564,6 +595,25 @@ int updateSlider(int rawTouch, int prevIng) {
 	HAL_Delay(100);
 	return newIng;
 }
+
+/**
+ * fillProgressBar
+ *
+ * Given an integer number of MILLISECONDS
+ * Fills up the progress bar in that much time
+ */
+void fillProgressBar(int fillTime) {
+	int single_delay = fillTime / 300 - 7;	// NOT 300 because drawFastVLine takes its own time
+										// this delay was experimentally determined so... yeah
+	if(single_delay < 0) {
+		single_delay = 0;
+	}
+	for (int x = 10; x <= 310; x++) {	// 310 = h-10
+		ILI9341_drawFastVLine(x, w/2+30, 50, COLOR_BLACK);
+		HAL_Delay(single_delay);
+	}
+}
+
 
 /**
  * Detect a touch within a rectangle of bounds.
