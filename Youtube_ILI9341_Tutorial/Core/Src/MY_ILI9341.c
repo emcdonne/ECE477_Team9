@@ -771,14 +771,25 @@ void ILI9341_drawChar(int16_t x, int16_t y, unsigned char c, uint16_t color, uin
     }
   }
 }
-void ILI9341_printText(char text[], int16_t x, int16_t y, uint16_t color, uint16_t bg, uint8_t size)
+void ILI9341_printTextLength(char text[], int16_t x, int16_t y, uint16_t color, uint16_t bg, uint8_t size, uint8_t length)
 {
 	int16_t offset;
 	offset = size*6;
-	for(uint16_t i=0; i<60 && text[i]!=NULL; i++)
+
+	for(uint16_t i=0; i<length; i++)
 	{
 		ILI9341_drawChar(x+(offset*i), y, text[i],color,bg,size);
 	}
+}
+
+void ILI9341_printText(char text[], int16_t x, int16_t y, uint16_t color, uint16_t bg, uint8_t size)
+{
+    int16_t offset;
+    offset = size*6;
+    for(uint16_t i=0; i<60 && text[i]!=NULL; i++)
+    {
+        ILI9341_drawChar(x+(offset*i), y, text[i],color,bg,size);
+    }
 }
 
 //12. Image print (RGB 565, 2 bytes per pixel)

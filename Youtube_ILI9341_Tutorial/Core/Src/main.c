@@ -87,7 +87,8 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+
+   HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -108,13 +109,16 @@ int main(void)
   /* USER CODE BEGIN 2 */
   ILI9341_Init(&hspi2, LCD_CS_GPIO_Port, LCD_CS_Pin, LCD_DC_GPIO_Port, LCD_DC_Pin, LCD_RST_GPIO_Port, LCD_RST_Pin);
   ILI9341_setRotation(2);
+
   TSC2046_Begin(&hspi1, TS_CS_GPIO_Port, TS_CS_Pin);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   GPIOC-> MODER |= (1<<16);
   GPIOC-> ODR   |= (1<<8);
+
 
   unsigned int h = ILI9341_HEIGHT;
   unsigned int w = ILI9341_WIDTH;
