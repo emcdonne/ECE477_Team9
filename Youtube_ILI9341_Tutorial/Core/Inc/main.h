@@ -41,6 +41,7 @@ void fillProgressBar(int fillTime);
 // MOTOR STUFF
 void motorSetup(void);
 void motorRun(int motorNum);
+void mixingIdle(int wait);
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -88,7 +89,7 @@ void Error_Handler(void);
 #define Motor1Step_GPIO_Port GPIOC
 #define Motor1EN_Pin GPIO_PIN_8
 #define Motor1EN_GPIO_Port GPIOC
-#define Motor3EN_Pin GPIO_PIN_9
+#define Motor3EN_Pin GPIO_PIN_11
 #define Motor3EN_GPIO_Port GPIOC
 #define LCD_RST_Pin GPIO_PIN_9
 #define LCD_RST_GPIO_Port GPIOA
@@ -96,7 +97,7 @@ void Error_Handler(void);
 #define LCD_DC_GPIO_Port GPIOA
 #define Motor3Step_Pin GPIO_PIN_10
 #define Motor3Step_GPIO_Port GPIOC
-#define Motor3Dir_Pin GPIO_PIN_11
+#define Motor3Dir_Pin GPIO_PIN_9
 #define Motor3Dir_GPIO_Port GPIOC
 #define Motor5Dir_Pin GPIO_PIN_3
 #define Motor5Dir_GPIO_Port GPIOB

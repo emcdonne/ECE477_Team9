@@ -328,13 +328,13 @@ int main(void)
 		  // CALL MOTOR STUFF
 		  HAL_GPIO_WritePin(GPIOC, Motor3EN_Pin, GPIO_PIN_RESET);
 		  motorRun(1);
-		  HAL_Delay(1000);
+		  mixingIdle(600);
 		  motorRun(2);
-		  HAL_Delay(1000);
+		  mixingIdle(600);
 		  motorRun(4);
-		  HAL_Delay(1000);
+		  mixingIdle(600);
 		  motorRun(5);
-		  HAL_Delay(1000);
+		  mixingIdle(600);
 		  HAL_GPIO_WritePin(GPIOC, Motor3EN_Pin, GPIO_PIN_SET);
 		  //
 
@@ -983,6 +983,16 @@ void motorRun(int motorNum)
     	HAL_GPIO_WritePin(Motor5EN_GPIO_Port, Motor5EN_Pin, GPIO_PIN_SET);
     }
 
+}
+
+void mixingIdle(int wait){
+    int i;
+    for(i = 0; i < wait; i++){
+    	HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_SET);
+        HAL_Delay(1);
+        HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_RESET);
+        HAL_Delay(1);
+    }
 }
 
 
