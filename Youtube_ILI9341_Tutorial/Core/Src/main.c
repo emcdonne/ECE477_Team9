@@ -41,6 +41,8 @@ int sliderSplit(int x);
 
 unsigned int h = ILI9341_HEIGHT;
 unsigned int w = ILI9341_WIDTH;
+
+#define ToggleValue ((uint16_t) 3000)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,6 +53,8 @@ unsigned int w = ILI9341_WIDTH;
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
+
+TIM_HandleTypeDef htim3;
 
 // Global ingredient counts - on a 1 to 100 scale currently
 int ingredient[4] = {0, 0, 0, 0};
@@ -65,6 +69,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -105,6 +110,10 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI1_Init();
   MX_SPI2_Init();
+  RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;	// manual
+  MX_TIM3_Init();
+
+  motorSetup();
 
   /* USER CODE BEGIN 2 */
   ILI9341_Init(&hspi2, LCD_CS_GPIO_Port, LCD_CS_Pin, LCD_DC_GPIO_Port, LCD_DC_Pin, LCD_RST_GPIO_Port, LCD_RST_Pin);
@@ -123,7 +132,7 @@ int main(void)
   unsigned int h = ILI9341_HEIGHT;
   unsigned int w = ILI9341_WIDTH;
 
-  char state[32] = "start";
+  char state[32] = "progressBar";
   ILI9341_Fill(COLOR_WHITE);
 
   while (1)
@@ -316,7 +325,20 @@ int main(void)
 		  ILI9341_printText("the bar is full.", 10, 115, COLOR_BLACK, COLOR_WHITE, 3);
 		  ILI9341_drawRect(10, w/2+30, h-10, w-40, COLOR_BLACK);
 
-		  fillProgressBar(5000);
+		  // CALL MOTOR STUFF
+		  HAL_GPIO_WritePin(GPIOC, Motor3EN_Pin, GPIO_PIN_RESET);
+		  motorRun(1);
+		  HAL_Delay(1000);
+		  motorRun(2);
+		  HAL_Delay(1000);
+		  motorRun(4);
+		  HAL_Delay(1000);
+		  motorRun(5);
+		  HAL_Delay(1000);
+		  HAL_GPIO_WritePin(GPIOC, Motor3EN_Pin, GPIO_PIN_SET);
+		  //
+
+		  fillProgressBar(100);
 
 		  ILI9341_printText("Creating your", 45, 10, COLOR_WHITE, COLOR_WHITE, 3);
 		  ILI9341_printText("Trail Mix!", 75, 45, COLOR_WHITE, COLOR_WHITE, 3);
@@ -497,34 +519,101 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, Motor4EN_Pin|Motor4Dir_Pin|Motor4Step_Pin|LCD_RST_Pin
+                          |LCD_DC_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, Motor2Dir_Pin|Motor2Step_Pin|Motor2EN_Pin|Motor5Dir_Pin
+                          |Motor5Step_Pin|Motor5EN_Pin|LCD_CS_Pin|TS_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, TS_CS_Pin|LCD_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, Motor1Dir_Pin|Motor1Step_Pin|Motor1EN_Pin|Motor3EN_Pin
+                          |Motor3Step_Pin|Motor3Dir_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : LCD_DC_Pin */
-  GPIO_InitStruct.Pin = LCD_DC_Pin;
+  /*Configure GPIO pins : Motor4EN_Pin Motor4Dir_Pin Motor4Step_Pin LCD_RST_Pin
+                           LCD_DC_Pin */
+  GPIO_InitStruct.Pin = Motor4EN_Pin|Motor4Dir_Pin|Motor4Step_Pin|LCD_RST_Pin
+                          |LCD_DC_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LCD_DC_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LCD_RST_Pin */
-  GPIO_InitStruct.Pin = LCD_RST_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LCD_RST_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : TS_CS_Pin LCD_CS_Pin */
-  GPIO_InitStruct.Pin = TS_CS_Pin|LCD_CS_Pin;
+  /*Configure GPIO pins : Motor2Dir_Pin Motor2Step_Pin Motor2EN_Pin Motor5Dir_Pin
+                           Motor5Step_Pin Motor5EN_Pin LCD_CS_Pin TS_CS_Pin */
+  GPIO_InitStruct.Pin = Motor2Dir_Pin|Motor2Step_Pin|Motor2EN_Pin|Motor5Dir_Pin
+                          |Motor5Step_Pin|Motor5EN_Pin|LCD_CS_Pin|TS_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : Motor1Dir_Pin Motor1Step_Pin Motor1EN_Pin Motor3EN_Pin
+                           Motor3Step_Pin Motor3Dir_Pin */
+  GPIO_InitStruct.Pin = Motor1Dir_Pin|Motor1Step_Pin|Motor1EN_Pin|Motor3EN_Pin
+                          |Motor3Step_Pin|Motor3Dir_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+}
+
+/**
+ * This is user code - heavily modified from their examples
+ */
+void motorSetup(void) {
+	// Set bits for EN and DIR for ALL motors
+	HAL_GPIO_WritePin(GPIOA, Motor4EN_Pin|Motor4Dir_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOB, Motor2EN_Pin|Motor5EN_Pin|Motor2Dir_Pin|Motor5Dir_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOC, Motor1EN_Pin|Motor3EN_Pin|Motor1Dir_Pin|Motor3Dir_Pin, GPIO_PIN_SET);
+}
+
+
+
+/**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 1;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 65535;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* USER CODE BEGIN TIM3_Init 2 */
+  TIM3->CR1 |= TIM_CR1_CEN;
+  /* USER CODE END TIM3_Init 2 */
 
 }
 
@@ -772,6 +861,130 @@ int convertY(int ynum){
 	ynum = ynum * w / 1705;
 	return ynum;
 }
+
+// MOTOR STUFF
+
+void motorRun(int motorNum)
+{
+    uint16_t currentTimerVal = 0;
+    int dispenseInterval = 0;
+
+    //enable the motor driver for said motor
+    if(motorNum == 1){ //motor 1 has M&Ms
+    	HAL_GPIO_WritePin(Motor1EN_GPIO_Port, Motor1EN_Pin, GPIO_PIN_RESET);
+        dispenseInterval = 30000; //30000
+    }
+    else if(motorNum == 2){ //motor 2 has peanuts
+    	HAL_GPIO_WritePin(Motor2EN_GPIO_Port, Motor2EN_Pin, GPIO_PIN_RESET);
+        dispenseInterval = 40000; //31000
+    }
+    else if(motorNum == 4){ //motor 4 has cheerios
+    	HAL_GPIO_WritePin(Motor4EN_GPIO_Port, Motor4EN_Pin, GPIO_PIN_RESET);
+        dispenseInterval = 40000; //31000
+    }
+    else if(motorNum == 5){ //motor 5 has granola
+    	HAL_GPIO_WritePin(Motor5EN_GPIO_Port, Motor5EN_Pin, GPIO_PIN_RESET);
+        dispenseInterval = 30000; //31000
+    }
+    else{
+        return;
+    }
+
+    int k;
+    int j;
+
+    for (k=0; k < 1; k++){
+        for (j=0; j <= dispenseInterval; j++) //j <= 55000 for peanuts, j <= 30000 for M&Ms for 1 flap dispensing
+        {
+            if(motorNum == 1){
+                currentTimerVal = TIM3->CNT;
+                if(currentTimerVal > ToggleValue){
+                	HAL_GPIO_WritePin(Motor1Step_GPIO_Port, Motor1Step_Pin, GPIO_PIN_SET);
+                	HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_SET);
+                }
+                else{
+                	HAL_GPIO_WritePin(Motor1Step_GPIO_Port, Motor1Step_Pin, GPIO_PIN_RESET);
+                	HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_RESET);
+                }
+                if(k == 0 || k == 3){
+                	HAL_GPIO_WritePin(Motor1Dir_GPIO_Port, Motor1Dir_Pin, GPIO_PIN_RESET);
+                }
+                else if(k == 1 || k == 2){
+                	HAL_GPIO_WritePin(Motor1Dir_GPIO_Port, Motor1Dir_Pin, GPIO_PIN_SET);
+                }
+            }
+            else if(motorNum == 2){
+                currentTimerVal = TIM3->CNT;
+                if(currentTimerVal > ToggleValue){
+                    HAL_GPIO_WritePin(Motor2Step_GPIO_Port, Motor2Step_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_SET);
+                }
+                else{
+                    HAL_GPIO_WritePin(Motor2Step_GPIO_Port, Motor2Step_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_RESET);
+                }
+                if(k == 0 || k == 3){
+                    HAL_GPIO_WritePin(Motor2Dir_GPIO_Port, Motor2Dir_Pin, GPIO_PIN_RESET);
+                }
+                else if(k == 1 || k == 2){
+                    HAL_GPIO_WritePin(Motor2Dir_GPIO_Port, Motor2Dir_Pin, GPIO_PIN_SET);
+                }
+            }
+            else if(motorNum == 4){
+                currentTimerVal = TIM3->CNT;
+                if(currentTimerVal > ToggleValue){
+                    HAL_GPIO_WritePin(Motor4Step_GPIO_Port, Motor4Step_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_SET);
+                }
+                else{
+                    HAL_GPIO_WritePin(Motor4Step_GPIO_Port, Motor4Step_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_RESET);
+                }
+                if(k == 0 || k == 3){
+                	HAL_GPIO_WritePin(Motor4Dir_GPIO_Port, Motor4Dir_Pin, GPIO_PIN_RESET);
+                }
+                else if(k == 1 || k == 2){
+                    HAL_GPIO_WritePin(Motor4Dir_GPIO_Port, Motor4Dir_Pin, GPIO_PIN_SET);
+                }
+            }
+            else if(motorNum == 5){
+                currentTimerVal = TIM3->CNT;
+                if(currentTimerVal > ToggleValue){
+                    HAL_GPIO_WritePin(Motor5Step_GPIO_Port, Motor5Step_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_SET);
+                }
+                else{
+                    HAL_GPIO_WritePin(Motor5Step_GPIO_Port, Motor5Step_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_RESET);
+                }
+                if(k == 0 || k == 3){
+                	HAL_GPIO_WritePin(Motor5Dir_GPIO_Port, Motor5Dir_Pin, GPIO_PIN_RESET);
+                }
+                else if(k == 1 || k == 2){
+                    HAL_GPIO_WritePin(Motor5Dir_GPIO_Port, Motor5Dir_Pin, GPIO_PIN_SET);
+                }
+            }
+        }
+        if(k != 1){
+            HAL_Delay(100);
+        }
+    }
+    if(motorNum == 1){ //motor 1 has M&Ms
+    	HAL_GPIO_WritePin(Motor1EN_GPIO_Port, Motor1EN_Pin, GPIO_PIN_SET);
+        //GPIO_SetBits(MotorGPIOC, Motor3EN);
+    }
+    else if(motorNum == 2){ //motor 2 has peanuts
+    	HAL_GPIO_WritePin(Motor2EN_GPIO_Port, Motor2EN_Pin, GPIO_PIN_SET);
+    }
+    else if(motorNum == 4){ //motor 4 has cheerios
+    	HAL_GPIO_WritePin(Motor4EN_GPIO_Port, Motor4EN_Pin, GPIO_PIN_SET);
+    }
+    else if(motorNum == 5){ //motor 5 has granola
+    	HAL_GPIO_WritePin(Motor5EN_GPIO_Port, Motor5EN_Pin, GPIO_PIN_SET);
+    }
+
+}
+
 
 /* USER CODE END 4 */
 
