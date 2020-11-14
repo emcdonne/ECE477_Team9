@@ -132,7 +132,7 @@ int main(void)
   unsigned int h = ILI9341_HEIGHT;
   unsigned int w = ILI9341_WIDTH;
 
-  char state[32] = "progressBar";
+  char state[32] = "start";
   ILI9341_Fill(COLOR_WHITE);
 
   while (1)
@@ -327,18 +327,38 @@ int main(void)
 
 		  // CALL MOTOR STUFF
 		  HAL_GPIO_WritePin(GPIOC, Motor3EN_Pin, GPIO_PIN_RESET);
-		  motorRun(1);
+		  for(int i = 0; i < ingredient[0]; i+=10) {
+			  motorRun(1);
+		  }
+		  mixingIdle(600); 		// leave this at 600
+		  for(int x = 0; x < 75; x++) {
+			  ILI9341_drawFastVLine(10+x, w/2+30, 50, COLOR_BLACK);
+		  }
+		  for(int i = 0; i < ingredient[1]; i+=10) {
+			  motorRun(2);
+		  }
 		  mixingIdle(600);
-		  motorRun(2);
+		  for(int x = 75; x < 150; x++) {
+			  ILI9341_drawFastVLine(10+x, w/2+30, 50, COLOR_BLACK);
+		  }
+		  for(int i = 0; i < ingredient[2]; i+=10) {
+			  motorRun(4);
+		  }
 		  mixingIdle(600);
-		  motorRun(4);
+		  for(int x = 150; x < 225; x++) {
+			  ILI9341_drawFastVLine(10+x, w/2+30, 50, COLOR_BLACK);
+		  }
+		  for(int i = 0; i < ingredient[3]; i+=10) {
+			  motorRun(5);
+		  }
 		  mixingIdle(600);
-		  motorRun(5);
-		  mixingIdle(600);
+		  for(int x = 225; x < h-20; x++) {
+			  ILI9341_drawFastVLine(10+x, w/2+30, 50, COLOR_BLACK);
+		  }
 		  HAL_GPIO_WritePin(GPIOC, Motor3EN_Pin, GPIO_PIN_SET);
 		  //
 
-		  fillProgressBar(100);
+		  //fillProgressBar(100);
 
 		  ILI9341_printText("Creating your", 45, 10, COLOR_WHITE, COLOR_WHITE, 3);
 		  ILI9341_printText("Trail Mix!", 75, 45, COLOR_WHITE, COLOR_WHITE, 3);
@@ -675,8 +695,12 @@ int sliderSplit(int x) {
 	// Input should be between 10 and h-10 (310)
 	// Rudimentary for now:
 	x = x - 5; 	// between 0 and 300 [ adjusting to the left a bit ]
+	/*
 	x = x / 15;		// between 0 and 20
 	x = x * 5;		// between 0 and 100 as a multiple of 5 (b/c int)
+	*/
+	x = x / 30;		// between 0 and 10
+	x = x * 10;		// between 0 and 100 as a multiple of 10 (b/c int)
 	return x;
 }
 
@@ -989,9 +1013,20 @@ void mixingIdle(int wait){
     int i;
     for(i = 0; i < wait; i++){
     	HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_SET);
-        HAL_Delay(1);
+    	micro_wait(1000);
         HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_RESET);
-        HAL_Delay(1);
+        micro_wait(1000);
+    }
+}
+
+void mixAndBar(int wait, int quarter){
+    int i;
+    for(i = 0; i < wait; i++){
+    	HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_SET);
+        micro_wait(1000);
+        HAL_GPIO_WritePin(Motor3Step_GPIO_Port, Motor3Step_Pin, GPIO_PIN_RESET);
+        micro_wait(1000);
+        //ILI9341_drawFastVLine(10+75*quarter+i*75/wait, w/2+30, 20, COLOR_BLACK);
     }
 }
 

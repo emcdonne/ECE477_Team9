@@ -42,6 +42,8 @@ void fillProgressBar(int fillTime);
 void motorSetup(void);
 void motorRun(int motorNum);
 void mixingIdle(int wait);
+void mixAndBar(int wait, int quarter);
+void micro_wait(unsigned int);
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
