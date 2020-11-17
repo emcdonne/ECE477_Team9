@@ -317,17 +317,17 @@ int main(void)
 
     GPIO_ResetBits(MotorGPIOC, Motor3EN);
     //GPIO_ResetBits(MotorGPIOC, Motor3Dir);
-    mixingIdle(1200);
+    //mixingIdle(1200);
     motorRun(1);
+    //mixingIdle(600);
+    /*motorRun(1);
     mixingIdle(600);
     motorRun(1);
     mixingIdle(600);
     motorRun(1);
     mixingIdle(600);
     motorRun(1);
-    mixingIdle(600);
-    motorRun(1);
-        mixingIdle(600);
+        mixingIdle(600);*/
 
     /*motorRun(1);
     mixingIdle(600);
