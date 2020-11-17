@@ -59,6 +59,8 @@ TIM_HandleTypeDef htim3;
 // Global ingredient counts - on a 1 to 100 scale currently
 int ingredient[4] = {0, 0, 0, 0};
 char ingBuf[5] = {' ', ' ', ' ', ' ', ' '};
+// Global current recipe
+int currentRecipe = 0;
 
 /* USER CODE BEGIN PV */
 
@@ -134,6 +136,9 @@ int main(void)
 
   char state[32] = "start";
   ILI9341_Fill(COLOR_WHITE);
+
+
+  //TouchTest();
 
   while (1)
   {
@@ -327,35 +332,44 @@ int main(void)
 
 		  // CALL MOTOR STUFF
 		  HAL_GPIO_WritePin(GPIOC, Motor3EN_Pin, GPIO_PIN_RESET);
-		  for(int i = 0; i < ingredient[0]; i+=10) {
-			  motorRun(1);
-		  }
-		  mixingIdle(600); 		// leave this at 600
-		  for(int x = 0; x < 75; x++) {
-			  ILI9341_drawFastVLine(10+x, w/2+30, 50, COLOR_BLACK);
-		  }
-		  for(int i = 0; i < ingredient[1]; i+=10) {
-			  motorRun(2);
-		  }
-		  mixingIdle(600);
-		  for(int x = 75; x < 150; x++) {
-			  ILI9341_drawFastVLine(10+x, w/2+30, 50, COLOR_BLACK);
-		  }
-		  for(int i = 0; i < ingredient[2]; i+=10) {
-			  motorRun(4);
-		  }
-		  mixingIdle(600);
-		  for(int x = 150; x < 225; x++) {
-			  ILI9341_drawFastVLine(10+x, w/2+30, 50, COLOR_BLACK);
-		  }
-		  for(int i = 0; i < ingredient[3]; i+=10) {
-			  motorRun(5);
-		  }
-		  mixingIdle(600);
-		  for(int x = 225; x < h-20; x++) {
-			  ILI9341_drawFastVLine(10+x, w/2+30, 50, COLOR_BLACK);
+		  int ing = 0;
+		  int totalIng = (ingredient[0] + ingredient[1] + ingredient[2] + ingredient[3]) / 10;
+		  int barUpdate = (h-20) / totalIng;
+		  int startSpot = 0;
+		  int x;
+		  while(ingredient[0] + ingredient[1] + ingredient[2] + ingredient[3] != 0) {
+			  if(ingredient[ing] == 0) {
+				  ing += 1;
+				  if(ing > 3) {
+					  ing = 0;
+				  }
+				  continue;
+			  }
+			  if(ing == 0) {
+				  motorRun(1);
+			  } else if(ing == 1) {
+				  motorRun(2);
+			  } else if(ing == 2) {
+				  motorRun(4);
+			  } else if(ing == 3) {
+				  motorRun(5);
+			  }
+			  ingredient[ing] -= 10;
+			  mixingIdle(600);
+			  ing += 1;
+			  if(ing > 3) {
+				  ing = 0;
+			  }
+			  for(x = 0; x < barUpdate; x++) {
+				  ILI9341_drawFastVLine(10+x+startSpot, w/2+30, 50, COLOR_BLACK);
+			  }
+			  startSpot += x;
+
 		  }
 		  HAL_GPIO_WritePin(GPIOC, Motor3EN_Pin, GPIO_PIN_SET);
+		  for(x = startSpot; x < h-20; x++) {
+			  ILI9341_drawFastVLine(10+x, w/2+30, 50, COLOR_BLACK);
+		  }
 		  //
 
 		  //fillProgressBar(100);
@@ -390,6 +404,29 @@ int main(void)
 		  ingredient[2] = 0;
 		  ingredient[3] = 0;
 
+	  }
+	  else if (strcmp(state, "recipeDisplay") == 0) {
+		  // INGREDIENT SCREEN: GRANOLA BITS
+		  IngredientSelect("GRANOLA", 3, ingredient[3]);
+
+		  while (1) {
+			  if(TSC2046_getRaw_Z() > 50) {
+				  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+5, w/2+15, h-4, w-10) ) {
+					  strcpy(state,"chooseToSave");
+					  break;
+				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+50, 10, h-4, 70) ) {
+					  strcpy(state,"icheerios");
+					  break;
+				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 10, w/2-25, h-10, w/2-5)){
+					  ingredient[3] = updateSlider(myTouch.rawX, ingredient[3]);
+				  }
+			  }
+		  }
+
+		  IngredientErase("GRANOLA", 3, ingredient[3]);
 	  }
 	  else {
 
