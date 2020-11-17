@@ -10,7 +10,7 @@
 #define RECIPE6 0x0800F028
 #define RECIPE7 0x0800F030
 #define RECIPE8 0x0800F038
-#define RECIPE(x) 0x0800F000 + (x-1) * 8
+#define RECIPE(x) 0x0800F000 + (x-1) * 0x400
 
 typedef struct
 {

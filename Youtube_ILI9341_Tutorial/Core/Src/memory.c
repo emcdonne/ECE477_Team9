@@ -67,7 +67,7 @@ void writeRecipe(uint32_t address, RecipeStruct recipe) {
     data[2] = recipe.ingredient3;
     data[3] = recipe.ingredient4;
     flash_initialize();
-    //flash_erase(address, 2);
+    flash_erase(address, 2);
     flash_write(address, data, 4);
     flash_deinitialize();
 }

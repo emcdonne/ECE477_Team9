@@ -146,6 +146,7 @@ int main(void)
   recTest.ingredient3 = 50;
   recTest.ingredient4 = 0;
   writeRecipe(RECIPE(1), recTest);
+  deleteRecipe(RECIPE(2));
 
 
   //TouchTest();
@@ -301,7 +302,7 @@ int main(void)
 		  // CHOOSE TO SAVE RECIPE OR CONTINUE
 		  // Step 1: Find the first available slot
 		  int newRecipe = 1;
-		  for(int x = 1; x < 33; x++) {	// arbitrary maximum
+		  for(int x = 1; x < 65; x++) {	// maximum page
 			  if(!(isValid(RECIPE(x)))) {
 				  newRecipe = x;
 				  break;
@@ -309,8 +310,6 @@ int main(void)
 		  }
 		  char buf[16];
 		  sprintf(buf,"Name: Recipe%2d", newRecipe);
-
-
 
 		  ILI9341_printText("Would you like ", 20, 10, COLOR_BLACK, COLOR_WHITE, 2);
 		  ILI9341_printText("to save this ", 20, 30, COLOR_BLACK, COLOR_WHITE, 2);
