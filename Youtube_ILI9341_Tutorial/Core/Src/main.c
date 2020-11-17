@@ -136,7 +136,7 @@ int main(void)
   unsigned int h = ILI9341_HEIGHT;
   unsigned int w = ILI9341_WIDTH;
 
-  char state[32] = "recipeSelect";
+  char state[32] = "start";
   ILI9341_Fill(COLOR_WHITE);
 
 
@@ -145,7 +145,7 @@ int main(void)
   recTest.ingredient2 = 0;
   recTest.ingredient3 = 50;
   recTest.ingredient4 = 0;
-  writeRecipe(RECIPE(2), recTest);
+  writeRecipe(RECIPE(1), recTest);
 
 
   //TouchTest();
@@ -189,6 +189,12 @@ int main(void)
 					  strcpy(state,"ipeanuts");
 					  break;
 				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 4, w/2+15, h/2-5, w-10) ) {
+					  strcpy(state,"recipeSelect");
+					  break;
+				  }
+
+
 			  }
 		  }
 
@@ -269,7 +275,7 @@ int main(void)
 		  IngredientErase("CHEERIOS", 3, ingredient[2]);
 	  }
 	  else if (strcmp(state, "igranola") == 0) {
-		  // INGREDIENT SCREEN: GRANOLA BITS
+		  // INGREDIENT SCREEN: GRANOLA BITS NOW BOONDI
 		  IngredientSelect("GRANOLA", 3, ingredient[3]);
 
 		  while (1) {
@@ -293,13 +299,26 @@ int main(void)
 	  }
 	  else if (strcmp(state, "chooseToSave") == 0) {
 		  // CHOOSE TO SAVE RECIPE OR CONTINUE
+		  // Step 1: Find the first available slot
+		  int newRecipe = 1;
+		  for(int x = 1; x < 33; x++) {	// arbitrary maximum
+			  if(!(isValid(RECIPE(x)))) {
+				  newRecipe = x;
+				  break;
+			  }
+		  }
+		  char buf[16];
+		  sprintf(buf,"Name: Recipe%2d", newRecipe);
+
+
+
 		  ILI9341_printText("Would you like ", 20, 10, COLOR_BLACK, COLOR_WHITE, 2);
 		  ILI9341_printText("to save this ", 20, 30, COLOR_BLACK, COLOR_WHITE, 2);
 		  ILI9341_printText("recipe before", 20, 50, COLOR_BLACK, COLOR_WHITE, 2);
 		  ILI9341_printText("making it?", 20, 70, COLOR_BLACK, COLOR_WHITE, 2);
 		  ILI9341_drawRect(h/2+50, 10, h-4, 70, COLOR_RED);
 		  ILI9341_printText("BACK", h/2+70, 30, COLOR_RED, COLOR_WHITE, 3);
-		  ILI9341_printText("Name: Recipe X", 20, 100, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_printText(buf, 20, 100, COLOR_BLACK, COLOR_WHITE, 2);
 		  ILI9341_drawRect(4, w/2+15, h/2-5, w-10, COLOR_BLUE);
 		  ILI9341_printText("SAVE", 43, w/2+35, COLOR_BLUE, COLOR_WHITE, 3);
 		  ILI9341_printText("RECIPE", 25, w/2+65, COLOR_BLUE, COLOR_WHITE, 3);
@@ -317,6 +336,16 @@ int main(void)
 			  		  strcpy(state,"igranola");
 			  		  break;
 				  }
+			  	  if(DetectTouch(myTouch.rawX, myTouch.rawY, 4, w/2+15, h/2-5, w-10)) {
+			  		  strcpy(state,"progressBar");
+			  		  RecipeStruct rec;
+			  		  rec.ingredient1 = ingredient[0];
+			  		  rec.ingredient2 = ingredient[1];
+			  		  rec.ingredient3 = ingredient[2];
+			  		  rec.ingredient4 = ingredient[3];
+			  		  writeRecipe(RECIPE(newRecipe), rec);
+			  		  break;
+			  	  }
 			  }
 		  }
 
@@ -326,7 +355,7 @@ int main(void)
 		  ILI9341_printText("making it?", 20, 70, COLOR_WHITE, COLOR_WHITE, 2);
 		  ILI9341_drawRect(h/2+50, 10, h-4, 70, COLOR_WHITE);
 		  ILI9341_printText("BACK", h/2+70, 30, COLOR_WHITE, COLOR_WHITE, 3);
-		  ILI9341_printText("Name: Recipe X", 20, 100, COLOR_WHITE, COLOR_WHITE, 2);
+		  ILI9341_printText(buf, 20, 100, COLOR_WHITE, COLOR_WHITE, 2);
 		  ILI9341_drawRect(4, w/2+15, h/2-5, w-10, COLOR_WHITE);
 		  ILI9341_printText("SAVE", 43, w/2+35, COLOR_WHITE, COLOR_WHITE, 3);
 		  ILI9341_printText("RECIPE", 25, w/2+65, COLOR_WHITE, COLOR_WHITE, 3);
@@ -499,7 +528,7 @@ int main(void)
 		  while (1) {
 			  if(TSC2046_getRaw_Z() > 50) {
 				  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
-				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+5, w/2+15, h-4, w-10) ) {
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+50, 10, h-4, 70) ) {
 					  if(recipeStart == 1) {
 						  strcpy(state,"start");
 					  } else {
@@ -508,26 +537,25 @@ int main(void)
 					  }
 					  break;
 				  }
-				  //strcmp(buf1, "Empty") != 0 &&
-				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 40, 75, 160, 125) ) {
+				  if(strcmp(buf1, "Empty") != 0 && DetectTouch(myTouch.rawX, myTouch.rawY, 40, 75, 160, 125) ) {
 					  // Recipe 1 (top left)
 					  currentRecipe = recipeStart;
 					  strcpy(state,"recipeDisplay");
 					  break;
 				  }
-				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 165, 75, 285, 125) ) {
+				  if(strcmp(buf2, "Empty") != 0 && DetectTouch(myTouch.rawX, myTouch.rawY, 165, 75, 285, 125) ) {
 					  // Recipe 1 (top left)
 					  currentRecipe = recipeStart + 1;
 					  strcpy(state,"recipeDisplay");
 					  break;
 				  }
-				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 40, 130, 160, 180) ) {
+				  if(strcmp(buf3, "Empty") != 0 && DetectTouch(myTouch.rawX, myTouch.rawY, 40, 130, 160, 180) ) {
 					  // Recipe 1 (top left)
 					  currentRecipe = recipeStart + 2;
 					  strcpy(state,"recipeDisplay");
 					  break;
 				  }
-				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 165, 130, 285, 180) ) {
+				  if(strcmp(buf4, "Empty") != 0 && DetectTouch(myTouch.rawX, myTouch.rawY, 165, 130, 285, 180) ) {
 					  // Recipe 1 (top left)
 					  currentRecipe = recipeStart + 3;
 					  strcpy(state,"recipeDisplay");
