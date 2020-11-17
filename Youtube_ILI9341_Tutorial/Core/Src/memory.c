@@ -67,7 +67,31 @@ void writeRecipe(uint32_t address, RecipeStruct recipe) {
     data[2] = recipe.ingredient3;
     data[3] = recipe.ingredient4;
     flash_initialize();
-    flash_erase(address, 2);
+    //flash_erase(address, 2);
     flash_write(address, data, 4);
     flash_deinitialize();
+}
+
+void deleteRecipe(uint32_t address) {
+	RecipeStruct recipe;
+	recipe.ingredient1 = 0xffff;
+	recipe.ingredient2 = 0xffff;
+	recipe.ingredient3 = 0xffff;
+	recipe.ingredient4 = 0xffff;
+	writeRecipe(address, recipe);
+}
+
+bool isValid(uint32_t address) {
+	RecipeStruct recipe;
+	recipe = readRecipe(address);
+	if (recipe.ingredient1 > 100) {
+		return false;
+	} else if (recipe.ingredient2 > 100) {
+		return false;
+	} else if (recipe.ingredient3 > 100) {
+		return false;
+	} else if (recipe.ingredient4 > 100) {
+		return false;
+	}
+	return true;
 }

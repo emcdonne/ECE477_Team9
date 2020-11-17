@@ -1,5 +1,6 @@
 #include "stm32f0xx_hal.h"
 #include <stdint.h>
+#include <stdbool.h>
 
 #define RECIPE1 0x0800F000
 #define RECIPE2 0x0800F008
@@ -24,3 +25,5 @@ void readData(uint32_t address);
 void writeData(uint32_t address);
 RecipeStruct readRecipe(uint32_t address);
 void writeRecipe(uint32_t address, RecipeStruct recipe);
+void deleteRecipe(uint32_t address);
+bool isValid(uint32_t address);

@@ -60,7 +60,9 @@ TIM_HandleTypeDef htim3;
 int ingredient[4] = {0, 0, 0, 0};
 char ingBuf[5] = {' ', ' ', ' ', ' ', ' '};
 // Global current recipe
-int currentRecipe = 0;
+int currentRecipe = 1;
+// Global first recipe on the page
+int recipeStart = 1;
 
 /* USER CODE BEGIN PV */
 
@@ -134,11 +136,20 @@ int main(void)
   unsigned int h = ILI9341_HEIGHT;
   unsigned int w = ILI9341_WIDTH;
 
-  char state[32] = "start";
+  char state[32] = "recipeSelect";
   ILI9341_Fill(COLOR_WHITE);
 
 
+  RecipeStruct recTest;
+  recTest.ingredient1 = 20;
+  recTest.ingredient2 = 0;
+  recTest.ingredient3 = 50;
+  recTest.ingredient4 = 0;
+  writeRecipe(RECIPE(2), recTest);
+
+
   //TouchTest();
+
 
   while (1)
   {
@@ -363,7 +374,7 @@ int main(void)
 			  for(x = 0; x < barUpdate; x++) {
 				  ILI9341_drawFastVLine(10+x+startSpot, w/2+30, 50, COLOR_BLACK);
 			  }
-			  startSpot += x;
+			  startSpot += x - 2;	// -1 to combat rounding issues
 
 		  }
 		  HAL_GPIO_WritePin(GPIOC, Motor3EN_Pin, GPIO_PIN_SET);
@@ -406,18 +417,23 @@ int main(void)
 
 	  }
 	  else if (strcmp(state, "recipeDisplay") == 0) {
-		  // INGREDIENT SCREEN: GRANOLA BITS
-		  IngredientSelect("GRANOLA", 3, ingredient[3]);
+		  // DISPLAY A RECIPE
+		  RecipeDisplay(currentRecipe);
+		  RecipeStruct recipe = readRecipe(RECIPE(currentRecipe));
 
 		  while (1) {
 			  if(TSC2046_getRaw_Z() > 50) {
 				  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
 				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+5, w/2+15, h-4, w-10) ) {
-					  strcpy(state,"chooseToSave");
+					  strcpy(state,"progressBar");
+					  ingredient[0] = recipe.ingredient1;
+					  ingredient[1] = recipe.ingredient2;
+					  ingredient[2] = recipe.ingredient3;
+					  ingredient[3] = recipe.ingredient4;
 					  break;
 				  }
 				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+50, 10, h-4, 70) ) {
-					  strcpy(state,"icheerios");
+					  strcpy(state,"recipeSelect");
 					  break;
 				  }
 				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 10, w/2-25, h-10, w/2-5)){
@@ -426,7 +442,120 @@ int main(void)
 			  }
 		  }
 
-		  IngredientErase("GRANOLA", 3, ingredient[3]);
+		  RecipeErase(currentRecipe);
+	  }
+	  else if (strcmp(state, "recipeSelect") == 0) {
+		  // RECIPE SCREEN: SHOW CURRENT RECIPES
+		  // FIRST STEP:
+		  // Figure out which recipes are valid
+		  char buf1[10];
+		  char buf2[10];
+		  char buf3[10];
+		  char buf4[10];
+		  bool showNextPage = true;
+		  //int recipeStart = 1;
+		  if(isValid(RECIPE(recipeStart))) {
+			  sprintf(buf1, "Recipe%2d", recipeStart);
+		  } else {
+			  sprintf(buf1, "Empty");
+			  showNextPage = false;
+		  }
+		  if(isValid(RECIPE(recipeStart+1))) {
+			  sprintf(buf2, "Recipe%2d", recipeStart+1);
+		  } else {
+			  sprintf(buf2, "Empty");
+			  showNextPage = false;
+		  }
+		  if(isValid(RECIPE(recipeStart+2))) {
+			  sprintf(buf3, "Recipe%2d", recipeStart+2);
+		  } else {
+			  sprintf(buf3, "Empty");
+			  showNextPage = false;
+		  }
+		  if(isValid(RECIPE(recipeStart+3))) {
+			  sprintf(buf4, "Recipe%2d", recipeStart+3);
+		  } else {
+			  sprintf(buf4, "Empty");
+			  showNextPage = false;
+		  }
+
+		  ILI9341_printText("Select your ", 40, 10, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_printText("  recipe:", 40, 30, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_drawRect(h/2+50, 10, h-4, 70, COLOR_RED);
+		  ILI9341_printText("BACK", h/2+70, 30, COLOR_RED, COLOR_WHITE, 3);
+		  ILI9341_drawRect(40, 75, 160, 125, COLOR_BLACK);
+		  ILI9341_printText(buf1, 45, 90, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_drawRect(165, 75, 285, 125, COLOR_BLACK);
+		  ILI9341_printText(buf2, 170, 90, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_drawRect(40, 130, 160, 180, COLOR_BLACK);
+		  ILI9341_printText(buf3, 45, 150, COLOR_BLACK, COLOR_WHITE, 2);
+		  ILI9341_drawRect(165, 130, 285, 180, COLOR_BLACK);
+		  ILI9341_printText(buf4, 170, 150, COLOR_BLACK, COLOR_WHITE, 2);
+		  if(showNextPage) {
+			  ILI9341_drawRect(40, 190, h-40, w-10, COLOR_DGREEN);
+			  ILI9341_printText("NEXT PAGE", 70, w-40, COLOR_DGREEN, COLOR_WHITE, 3);
+		  }
+
+		  while (1) {
+			  if(TSC2046_getRaw_Z() > 50) {
+				  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+5, w/2+15, h-4, w-10) ) {
+					  if(recipeStart == 1) {
+						  strcpy(state,"start");
+					  } else {
+						  // Same state for next time
+						  recipeStart -= 4;
+					  }
+					  break;
+				  }
+				  //strcmp(buf1, "Empty") != 0 &&
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 40, 75, 160, 125) ) {
+					  // Recipe 1 (top left)
+					  currentRecipe = recipeStart;
+					  strcpy(state,"recipeDisplay");
+					  break;
+				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 165, 75, 285, 125) ) {
+					  // Recipe 1 (top left)
+					  currentRecipe = recipeStart + 1;
+					  strcpy(state,"recipeDisplay");
+					  break;
+				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 40, 130, 160, 180) ) {
+					  // Recipe 1 (top left)
+					  currentRecipe = recipeStart + 2;
+					  strcpy(state,"recipeDisplay");
+					  break;
+				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 165, 130, 285, 180) ) {
+					  // Recipe 1 (top left)
+					  currentRecipe = recipeStart + 3;
+					  strcpy(state,"recipeDisplay");
+					  break;
+				  }
+				  if(showNextPage && DetectTouch(myTouch.rawX, myTouch.rawY, 40, 190, h-40, w-10) ) {
+					  // Same state for next time
+					  recipeStart += 4;
+					  break;
+				  }
+			  }
+		  }
+		  ILI9341_printText("Select your ", 40, 10, COLOR_WHITE, COLOR_WHITE, 2);
+		  ILI9341_printText("  recipe:", 40, 30, COLOR_WHITE, COLOR_WHITE, 2);
+		  ILI9341_drawRect(h/2+50, 10, h-4, 70, COLOR_WHITE);
+		  ILI9341_printText("BACK", h/2+70, 30, COLOR_WHITE, COLOR_WHITE, 3);
+		  ILI9341_drawRect(40, 75, 160, 125, COLOR_WHITE);
+		  ILI9341_printText(buf1, 45, 90, COLOR_WHITE, COLOR_WHITE, 2);
+		  ILI9341_drawRect(165, 75, 285, 125, COLOR_WHITE);
+		  ILI9341_printText(buf2, 170, 90, COLOR_WHITE, COLOR_WHITE, 2);
+		  ILI9341_drawRect(40, 130, 160, 180, COLOR_WHITE);
+		  ILI9341_printText(buf3, 45, 150, COLOR_WHITE, COLOR_WHITE, 2);
+		  ILI9341_drawRect(165, 130, 285, 180, COLOR_WHITE);
+		  ILI9341_printText(buf4, 170, 150, COLOR_WHITE, COLOR_WHITE, 2);
+		  if(showNextPage) {
+			  ILI9341_drawRect(40, 190, h-40, w-10, COLOR_WHITE);
+			  ILI9341_printText("NEXT PAGE", 70, w-40, COLOR_WHITE, COLOR_WHITE, 3);
+		  }
 	  }
 	  else {
 
@@ -723,6 +852,53 @@ void IngredientErase(char ingName[], int size, int ingNum) {
 }
 
 /**
+ * Read in from flash and display the ingredients for this recipe
+ */
+void RecipeDisplay(int recNum) {
+	char buf[32];
+	RecipeStruct recipe = readRecipe(RECIPE(recNum));
+	ILI9341_printText("Would you like ", 20, 10, COLOR_BLACK, COLOR_WHITE, 2);
+	ILI9341_printText(" this recipe?", 20, 30, COLOR_BLACK, COLOR_WHITE, 2);
+	sprintf(buf, "Name: RECIPE%2d", recNum);
+	ILI9341_printText(buf, 20, 70, COLOR_BLACK, COLOR_WHITE, 2);
+	sprintf(buf, "PEANUTS:  %3d%%", recipe.ingredient1);
+	ILI9341_printText(buf, 20, 90, COLOR_BLACK, COLOR_WHITE, 2);
+	sprintf(buf, "M&MS:     %3d%%", recipe.ingredient2);
+	ILI9341_printText(buf, 20, 110, COLOR_BLACK, COLOR_WHITE, 2);
+	sprintf(buf, "CHEERIOS: %3d%%", recipe.ingredient3);
+	ILI9341_printText(buf, 20, 130, COLOR_BLACK, COLOR_WHITE, 2);
+	sprintf(buf, "BOONDI:   %3d%%", recipe.ingredient4);
+	ILI9341_printText(buf, 20, 150, COLOR_BLACK, COLOR_WHITE, 2);
+
+	ILI9341_drawRect(h/2+50, 10, h-4, 70, COLOR_RED);
+	ILI9341_printText("BACK", h/2+70, 30, COLOR_RED, COLOR_WHITE, 3);
+	ILI9341_drawRect(40, 170, h-40, w-10, COLOR_DGREEN);
+	ILI9341_printText("USE RECIPE", 70, w-50, COLOR_DGREEN, COLOR_WHITE, 3);
+}
+
+void RecipeErase(int recNum) {
+	char buf[32];
+	RecipeStruct recipe = readRecipe(RECIPE(recNum));
+	ILI9341_printText("Would you like ", 20, 10, COLOR_WHITE, COLOR_WHITE, 2);
+	ILI9341_printText(" this recipe?", 20, 30, COLOR_WHITE, COLOR_WHITE, 2);
+	sprintf(buf, "Name: RECIPE%2d", recNum);
+	ILI9341_printText(buf, 20, 70, COLOR_WHITE, COLOR_WHITE, 2);
+	sprintf(buf, "PEANUTS:  %3d%%", recipe.ingredient1);
+	ILI9341_printText(buf, 20, 90, COLOR_WHITE, COLOR_WHITE, 2);
+	sprintf(buf, "M&MS:     %3d%%", recipe.ingredient2);
+	ILI9341_printText(buf, 20, 110, COLOR_WHITE, COLOR_WHITE, 2);
+	sprintf(buf, "CHEERIOS: %3d%%", recipe.ingredient3);
+	ILI9341_printText(buf, 20, 130, COLOR_WHITE, COLOR_WHITE, 2);
+	sprintf(buf, "BOONDI:   %3d%%", recipe.ingredient4);
+	ILI9341_printText(buf, 20, 150, COLOR_WHITE, COLOR_WHITE, 2);
+
+	ILI9341_drawRect(h/2+50, 10, h-4, 70, COLOR_WHITE);
+	ILI9341_printText("BACK", h/2+70, 30, COLOR_WHITE, COLOR_WHITE, 3);
+	ILI9341_drawRect(40, 170, h-40, w-10, COLOR_WHITE);
+	ILI9341_printText("USE RECIPE", 70, w-50, COLOR_WHITE, COLOR_WHITE, 3);
+}
+
+/**
  * Return a 0 - 100 percentage based on where on the IngredientSelect
  * slider bar the touch was detected from.
  *
@@ -943,7 +1119,7 @@ void motorRun(int motorNum)
     	HAL_GPIO_WritePin(Motor4EN_GPIO_Port, Motor4EN_Pin, GPIO_PIN_RESET);
         dispenseInterval = 40000; //31000
     }
-    else if(motorNum == 5){ //motor 5 has granola
+    else if(motorNum == 5){ //motor 5 has boondi
     	HAL_GPIO_WritePin(Motor5EN_GPIO_Port, Motor5EN_Pin, GPIO_PIN_RESET);
         dispenseInterval = 30000; //31000
     }
@@ -1040,7 +1216,7 @@ void motorRun(int motorNum)
     else if(motorNum == 4){ //motor 4 has cheerios
     	HAL_GPIO_WritePin(Motor4EN_GPIO_Port, Motor4EN_Pin, GPIO_PIN_SET);
     }
-    else if(motorNum == 5){ //motor 5 has granola
+    else if(motorNum == 5){ //motor 5 has boondi
     	HAL_GPIO_WritePin(Motor5EN_GPIO_Port, Motor5EN_Pin, GPIO_PIN_SET);
     }
 

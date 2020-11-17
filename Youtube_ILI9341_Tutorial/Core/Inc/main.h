@@ -30,14 +30,17 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include <stdbool.h>	// I think it looks clean, okay!
 #include "stm32f0xx_hal.h"
+#include "memory.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 void IngredientSelect(char ingredient[], int size, int ingNum);
 void IngredientErase(char ingredient[], int size, int ingNum);
+void RecipeDisplay(int recNum);
 bool DetectTouch(int rawx, int rawy, int x0, int y0, int x1, int y1);
 int updateSlider(int rawTouch, int prevIng);
 void fillProgressBar(int fillTime);
+void RecipeErase(int recNum);
 // MOTOR STUFF
 void motorSetup(void);
 void motorRun(int motorNum);
