@@ -1109,7 +1109,7 @@ void motorRun(int motorNum)
     //enable the motor driver for said motor
     if(motorNum == 1){ //motor 1 has M&Ms
     	HAL_GPIO_WritePin(Motor1EN_GPIO_Port, Motor1EN_Pin, GPIO_PIN_RESET);
-        dispenseInterval = 30000; //30000
+        dispenseInterval = 40000; //30000
     }
     else if(motorNum == 2){ //motor 2 has peanuts
     	HAL_GPIO_WritePin(Motor2EN_GPIO_Port, Motor2EN_Pin, GPIO_PIN_RESET);
@@ -1121,7 +1121,7 @@ void motorRun(int motorNum)
     }
     else if(motorNum == 5){ //motor 5 has boondi
     	HAL_GPIO_WritePin(Motor5EN_GPIO_Port, Motor5EN_Pin, GPIO_PIN_RESET);
-        dispenseInterval = 30000; //31000
+        dispenseInterval = 40000; //31000
     }
     else{
         return;
@@ -1130,7 +1130,13 @@ void motorRun(int motorNum)
     int k;
     int j;
 
-    for (k=0; k < 1; k++){
+    for (k=0; k < 2; k++){
+        if(k == 1){
+            dispenseInterval = 20000;
+        }
+        else{
+            dispenseInterval = 60000;
+        }
         for (j=0; j <= dispenseInterval; j++) //j <= 55000 for peanuts, j <= 30000 for M&Ms for 1 flap dispensing
         {
             if(motorNum == 1){
