@@ -276,7 +276,7 @@ int main(void)
 	  }
 	  else if (strcmp(state, "igranola") == 0) {
 		  // INGREDIENT SCREEN: GRANOLA BITS NOW BOONDI
-		  IngredientSelect("GRANOLA", 3, ingredient[3]);
+		  IngredientSelect("BOONDI", 3, ingredient[3]);
 
 		  while (1) {
 			  if(TSC2046_getRaw_Z() > 50) {
@@ -295,7 +295,7 @@ int main(void)
 			  }
 		  }
 
-		  IngredientErase("GRANOLA", 3, ingredient[3]);
+		  IngredientErase("BOONDI", 3, ingredient[3]);
 	  }
 	  else if (strcmp(state, "chooseToSave") == 0) {
 		  // CHOOSE TO SAVE RECIPE OR CONTINUE
@@ -427,7 +427,7 @@ int main(void)
 
 		  while (1) {
 			  // Might want to consider using a timer so a user touch can also skip to the first state again
-			  HAL_Delay(10000);
+			  HAL_Delay(5000);
 			  strcpy(state, "start");
 			  break;
 		  }
