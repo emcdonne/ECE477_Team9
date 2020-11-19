@@ -146,7 +146,7 @@ int main(void)
   recTest.ingredient3 = 50;
   recTest.ingredient4 = 0;
   writeRecipe(RECIPE(1), recTest);
-  deleteRecipe(RECIPE(2));
+
 
 
   //TouchTest();
@@ -169,6 +169,8 @@ int main(void)
 	   * White will be assumed as the default background color.
 	   */
 	  if(strcmp(state, "start") == 0) {
+		  // RE-INITIALIZE SOME GOOD VARS
+		  currentRecipe = 1;
 		  // DEFAULT START SCREEN
 		  ILI9341_printText("Welcome to the", 35, 10, COLOR_BLACK, COLOR_WHITE, 3);
 		  ILI9341_printText("Boiler Mixer!", 50, 40, COLOR_BLACK, COLOR_WHITE, 3);
@@ -201,7 +203,7 @@ int main(void)
 
 		  ILI9341_Fill(COLOR_WHITE);
 
-
+		  InformationScreen();
 	  }
 	  else if (strcmp(state, "ipeanuts") == 0) {
 		  // INGREDIENT SCREEN: PEANUTS
@@ -260,7 +262,7 @@ int main(void)
 			  if(TSC2046_getRaw_Z() > 50) {
 				  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
 				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+5, w/2+15, h-4, w-10) ) {
-					  strcpy(state,"igranola");
+					  strcpy(state,"iboondi");
 					  break;
 				  }
 				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+50, 10, h-4, 70) ) {
@@ -275,7 +277,7 @@ int main(void)
 
 		  IngredientErase("CHEERIOS", 3, ingredient[2]);
 	  }
-	  else if (strcmp(state, "igranola") == 0) {
+	  else if (strcmp(state, "iboondi") == 0) {
 		  // INGREDIENT SCREEN: GRANOLA BITS NOW BOONDI
 		  IngredientSelect("BOONDI", 3, ingredient[3]);
 
@@ -302,7 +304,7 @@ int main(void)
 		  // CHOOSE TO SAVE RECIPE OR CONTINUE
 		  // Step 1: Find the first available slot
 		  int newRecipe = 1;
-		  for(int x = 1; x < 65; x++) {	// maximum page
+		  for(int x = 1; x < 37; x++) {	// maximum pages we can safely save to
 			  if(!(isValid(RECIPE(x)))) {
 				  newRecipe = x;
 				  break;
@@ -332,17 +334,18 @@ int main(void)
 					  break;
 			  	  }
 			  	  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+50, 10, h-4, 70) ) {
-			  		  strcpy(state,"igranola");
+			  		  strcpy(state,"iboondi");
 			  		  break;
 				  }
 			  	  if(DetectTouch(myTouch.rawX, myTouch.rawY, 4, w/2+15, h/2-5, w-10)) {
-			  		  strcpy(state,"progressBar");
+			  		  strcpy(state,"saveConfirm");
 			  		  RecipeStruct rec;
 			  		  rec.ingredient1 = ingredient[0];
 			  		  rec.ingredient2 = ingredient[1];
 			  		  rec.ingredient3 = ingredient[2];
 			  		  rec.ingredient4 = ingredient[3];
 			  		  writeRecipe(RECIPE(newRecipe), rec);
+			  		  currentRecipe = newRecipe;
 			  		  break;
 			  	  }
 			  }
@@ -424,12 +427,14 @@ int main(void)
 		  ILI9341_printText("mix. Thank you for ", 20, 95, COLOR_BLACK, COLOR_WHITE, 2);
 		  ILI9341_printText("using Boiler Mixer!", 20, 115, COLOR_BLACK, COLOR_WHITE, 2);
 
-		  while (1) {
-			  // Might want to consider using a timer so a user touch can also skip to the first state again
-			  HAL_Delay(5000);
-			  strcpy(state, "start");
-			  break;
+		  for(int x = 0; x < 2500; x++) {
+			  // Wait 2500 microseconds or until user touch
+			  if(TSC2046_getRaw_Z() > 50) {
+				  break;
+			  }
+			  micro_wait(1000);
 		  }
+		  strcpy(state, "start");
 
 		  ILI9341_Fill_Rect(10, w/2+30, h-10, w-40, COLOR_WHITE);
 		  ILI9341_printText("Trail Mix", 80, 10, COLOR_WHITE, COLOR_WHITE, 3);
@@ -583,6 +588,61 @@ int main(void)
 			  ILI9341_drawRect(40, 190, h-40, w-10, COLOR_WHITE);
 			  ILI9341_printText("NEXT PAGE", 70, w-40, COLOR_WHITE, COLOR_WHITE, 3);
 		  }
+	  }
+	  else if (strcmp(state, "saveConfirm") == 0) {
+		  char buf[32];
+		  RecipeStruct recipe = readRecipe(RECIPE(currentRecipe));
+		  ILI9341_printText("Your recipe was saved.", 20, 10, COLOR_BLACK, COLOR_WHITE, 2);
+		  sprintf(buf, "Name: RECIPE%2d", currentRecipe);
+		  ILI9341_printText(buf, 20, 40, COLOR_BLACK, COLOR_WHITE, 2);
+		  sprintf(buf, "PEANUTS:  %3d%%", recipe.ingredient1);
+		  ILI9341_printText(buf, 20, 60, COLOR_BLACK, COLOR_WHITE, 2);
+		  sprintf(buf, "M&MS:     %3d%%", recipe.ingredient2);
+		  ILI9341_printText(buf, 20, 80, COLOR_BLACK, COLOR_WHITE, 2);
+		  sprintf(buf, "CHEERIOS: %3d%%", recipe.ingredient3);
+		  ILI9341_printText(buf, 20, 100, COLOR_BLACK, COLOR_WHITE, 2);
+		  sprintf(buf, "BOONDI:   %3d%%", recipe.ingredient4);
+		  ILI9341_printText(buf, 20, 120, COLOR_BLACK, COLOR_WHITE, 2);
+
+		  ILI9341_drawRect(20, 140, h/2-10, w-10, COLOR_RED);
+		  ILI9341_printText("RETURN", 33, 155, COLOR_RED, COLOR_WHITE, 3);
+		  ILI9341_printText(" HOME", 33, 190, COLOR_RED, COLOR_WHITE, 3);
+		  ILI9341_drawRect(h/2+10, 140, h-20, w-10, COLOR_DGREEN);
+		  ILI9341_printText(" MAKE", h/2+23, 155, COLOR_DGREEN, COLOR_WHITE, 3);
+		  ILI9341_printText("RECIPE", h/2+23, 190, COLOR_DGREEN, COLOR_WHITE, 3);
+
+		  while (1) {
+			  if(TSC2046_getRaw_Z() > 50) {
+				  TS_TOUCH_DATA_Def myTouch = TSC2046_GetTouchData();
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, 20, 140, h/2-10, w-10) ) {
+					  strcpy(state,"start");
+					  break;
+				  }
+				  if(DetectTouch(myTouch.rawX, myTouch.rawY, h/2+10, 140, h-20, w-10) ) {
+					  strcpy(state,"progressBar");
+					  break;
+				  }
+			  }
+		  }
+
+		  ILI9341_printText("Your recipe was saved.", 20, 10, COLOR_WHITE, COLOR_WHITE, 2);
+		  sprintf(buf, "Name: RECIPE%2d", currentRecipe);
+		  ILI9341_printText(buf, 20, 40, COLOR_WHITE, COLOR_WHITE, 2);
+		  sprintf(buf, "PEANUTS:  %3d%%", recipe.ingredient1);
+		  ILI9341_printText(buf, 20, 60, COLOR_WHITE, COLOR_WHITE, 2);
+		  sprintf(buf, "M&MS:     %3d%%", recipe.ingredient2);
+		  ILI9341_printText(buf, 20, 80, COLOR_WHITE, COLOR_WHITE, 2);
+		  sprintf(buf, "CHEERIOS: %3d%%", recipe.ingredient3);
+		  ILI9341_printText(buf, 20, 100, COLOR_WHITE, COLOR_WHITE, 2);
+		  sprintf(buf, "BOONDI:   %3d%%", recipe.ingredient4);
+		  ILI9341_printText(buf, 20, 120, COLOR_WHITE, COLOR_WHITE, 2);
+
+		  ILI9341_drawRect(20, 140, h/2-10, w-10, COLOR_WHITE);
+		  ILI9341_printText("RETURN", 33, 155, COLOR_WHITE, COLOR_WHITE, 3);
+		  ILI9341_printText(" HOME", 33, 190, COLOR_WHITE, COLOR_WHITE, 3);
+		  ILI9341_drawRect(h/2+10, 140, h-20, w-10, COLOR_WHITE);
+		  ILI9341_printText(" MAKE", h/2+23, 155, COLOR_WHITE, COLOR_WHITE, 3);
+		  ILI9341_printText("RECIPE", h/2+23, 190, COLOR_WHITE, COLOR_WHITE, 3);
 	  }
 	  else {
 
@@ -923,6 +983,42 @@ void RecipeErase(int recNum) {
 	ILI9341_printText("BACK", h/2+70, 30, COLOR_WHITE, COLOR_WHITE, 3);
 	ILI9341_drawRect(40, 170, h-40, w-10, COLOR_WHITE);
 	ILI9341_printText("USE RECIPE", 70, w-50, COLOR_WHITE, COLOR_WHITE, 3);
+}
+
+/**
+ * Call this whenever you want to give the user information.
+ * Do in-between state changes.
+ * This expects an empty screen, and ends with an empty screen.
+ * Will NOT affect the current state
+ */
+void InformationScreen() {
+	ILI9341_printText("This machine measures ", 20, 10, COLOR_BLACK, COLOR_WHITE, 2);
+	ILI9341_printText("\"10%\" as approximately ", 20, 30, COLOR_BLACK, COLOR_WHITE, 2);
+	ILI9341_printText("1/4 (1 quarter) of a cup.", 20, 50, COLOR_BLACK, COLOR_WHITE, 2);
+	ILI9341_printText("Please provide a bowl", 20, 70, COLOR_BLACK, COLOR_WHITE, 2);
+	ILI9341_printText("That can hold at least", 20, 90, COLOR_BLACK, COLOR_WHITE, 2);
+	ILI9341_printText("2.5 cups of dry food.", 20, 110, COLOR_BLACK, COLOR_WHITE, 2);
+	ILI9341_printText("Also note that you do", 20, 150, COLOR_BLACK, COLOR_WHITE, 2);
+	ILI9341_printText("NOT need ingredients", 20, 170, COLOR_BLACK, COLOR_WHITE, 2);
+	ILI9341_printText("to sum to 100%.", 20, 190, COLOR_BLACK, COLOR_WHITE, 2);
+
+	for(int x = 0; x < 1500; x++) {
+		// Wait 1500 microseconds or until user touch
+		if(TSC2046_getRaw_Z() > 50) {
+			break;
+		}
+		micro_wait(1000);
+	}
+
+	ILI9341_printText("This machine measures ", 20, 10, COLOR_WHITE, COLOR_WHITE, 2);
+	ILI9341_printText("\"10%\" as approximately ", 20, 30, COLOR_WHITE, COLOR_WHITE, 2);
+	ILI9341_printText("1/4 (1 quarter) of a cup.", 20, 50, COLOR_WHITE, COLOR_WHITE, 2);
+	ILI9341_printText("Please provide a bowl", 20, 70, COLOR_WHITE, COLOR_WHITE, 2);
+	ILI9341_printText("That can hold at least", 20, 90, COLOR_WHITE, COLOR_WHITE, 2);
+	ILI9341_printText("2.5 cups of dry food.", 20, 110, COLOR_WHITE, COLOR_WHITE, 2);
+	ILI9341_printText("Also note that you do", 20, 150, COLOR_WHITE, COLOR_WHITE, 2);
+	ILI9341_printText("NOT need ingredients", 20, 170, COLOR_WHITE, COLOR_WHITE, 2);
+	ILI9341_printText("to sum to 100%.", 20, 190, COLOR_WHITE, COLOR_WHITE, 2);
 }
 
 /**

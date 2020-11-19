@@ -3,14 +3,7 @@
 #include <stdbool.h>
 
 #define RECIPE1 0x0800F000
-#define RECIPE2 0x0800F008
-#define RECIPE3 0x0800F010
-#define RECIPE4 0x0800F018
-#define RECIPE5 0x0800F020
-#define RECIPE6 0x0800F028
-#define RECIPE7 0x0800F030
-#define RECIPE8 0x0800F038
-#define RECIPE(x) 0x0800F000 + (x-1) * 0x400
+#define RECIPE(x) 0x08007000 + (x-1) * 0x00000400
 
 typedef struct
 {

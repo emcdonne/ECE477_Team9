@@ -41,6 +41,7 @@ bool DetectTouch(int rawx, int rawy, int x0, int y0, int x1, int y1);
 int updateSlider(int rawTouch, int prevIng);
 void fillProgressBar(int fillTime);
 void RecipeErase(int recNum);
+void InformationScreen();
 // MOTOR STUFF
 void motorSetup(void);
 void motorRun(int motorNum);
