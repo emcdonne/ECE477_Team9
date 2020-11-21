@@ -171,6 +171,10 @@ int main(void)
 	  if(strcmp(state, "start") == 0) {
 		  // RE-INITIALIZE SOME GOOD VARS
 		  currentRecipe = 1;
+		  ingredient[0] = 0;
+		  ingredient[1] = 0;
+		  ingredient[2] = 0;
+		  ingredient[3] = 0;
 		  // DEFAULT START SCREEN
 		  ILI9341_printText("Welcome to the", 35, 10, COLOR_BLACK, COLOR_WHITE, 3);
 		  ILI9341_printText("Boiler Mixer!", 50, 40, COLOR_BLACK, COLOR_WHITE, 3);
